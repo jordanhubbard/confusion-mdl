@@ -1,6 +1,8 @@
 Confusion: A MDL interpreter
 (or, "How to Fit a Small Program into a Large Machine")
 
+Matthew Russotto - <http://www.russotto.net/git/mrussotto/confusion/>
+
 For those poor souls still stuck in dawn of IF history, I present 
 "Confusion" -- a MDL interpreter which works just well enough to play 
 the original Zork all the way through.  The original Zork isn't for the 
