@@ -24,16 +24,24 @@ interpreter, are available at: <http://www.russotto.net/~mrussotto/confusion/mdl
 [see also <https://github.com/itafroma/zork-mdl> ]
 
 To play Zork, unpack this directory, change directory to the new 
-"mdlzork" directory", run the interpreter with the parameter "-r 
-MDL/MADADV.SAVE" e.g. "../confusion-src/mdli -r MDL/MADADV.SAVE". 
+"mdlzork" directory, run the interpreter with the parameter ~-r MDL/MADADV.SAVE~ 
+e.g. ~../confusion-src/mdli -r MDL/MADADV.SAVE~. 
 You should be at the white house: 
+
+#+BEGIN_VERBATIM
 $ ../confusion-src/mdli -r MDL/MADADV.SAVE 
+
 This Zork created July 6, 2009. 
+
 West of House 
+
 This is an open field west of a white house, with a boarded front 
 door. 
+
 There is a small mailbox here. 
+
 A rubber mat saying 'Welcome to Zork!' lies by the door. 
+#+END_VERBATIM
 
 The HELP, DOC and INFO commands do not work, as I do not have those files. 
 I have played Zork all the way through, however, I have made some 
@@ -43,8 +51,12 @@ game; if you get dumped to a MDL LISTEN prompt, this might not be an
 interpreter bug) 
 If you modify the MDL sources, you can re-build the game by running 
 the interpreter with no parameters in the mdlzork directory, and 
-typing 
-<FLOAD "run.mud"> 
+typing:
+
+~<FLOAD "run.mud">~
+
+[You'll almost certainly have to re-build the game as above.]
+
 This will rebuild the MDL/MADADV.SAVE file and start the game. 
 
 Confusion probably won't be developed further.
