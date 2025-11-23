@@ -16,7 +16,11 @@
 /*    You should have received a copy of the GNU General Public License     */
 /*    along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 /*****************************************************************************/
+#ifdef USE_GC_STUB
+#include "gc_stub.h"
+#else
 #include <gc/gc.h>
+#endif
 #include <string.h>
 #include <unistd.h>
 #include "macros.hpp"

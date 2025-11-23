@@ -1,0 +1,113 @@
+#   'Confusion', a MDL interpreter - WebAssembly Build
+#   Copyright 2009 Matthew T. Russotto
+#   WASM build configuration added 2025
+#
+#   This program is free software: you can redistribute it and/or modify
+#   it under the terms of the GNU General Public License as published by
+#   the Free Software Foundation, either version 3 of the License, or
+#   (at your option) any later version.
+
+# Use Emscripten compiler
+CC = emcc
+CXX = em++
+
+# Build flags
+CDEBUGFLAGS = -g
+COPTFLAGS = -O3
+CWARNFLAGS = -Wall -Wno-switch
+
+# WASM-specific defines
+WASMDEFINES = -DUSE_GC_STUB -D__EMSCRIPTEN__ -DGC_STUB
+
+# Include paths
+INCLUDES = -I.
+
+# Compiler flags
+CFLAGS = $(CDEBUGFLAGS) $(COPTFLAGS) $(CWARNFLAGS) $(WASMDEFINES) $(INCLUDES)
+CXXFLAGS = $(CDEBUGFLAGS) $(COPTFLAGS) $(CWARNFLAGS) $(WASMDEFINES) $(INCLUDES)
+
+# Emscripten-specific linker flags
+EMFLAGS = -s WASM=1 \
+          -s ALLOW_MEMORY_GROWTH=1 \
+          -s INITIAL_MEMORY=16777216 \
+          -s MAXIMUM_MEMORY=268435456 \
+          -s STACK_SIZE=5242880 \
+          -s MODULARIZE=1 \
+          -s EXPORT_NAME='createMDLI' \
+          -s EXPORTED_FUNCTIONS='["_main"]' \
+          -s EXPORTED_RUNTIME_METHODS='["FS","callMain","TTY","ccall","cwrap"]' \
+          -s FORCE_FILESYSTEM=1 \
+          -s EXIT_RUNTIME=0 \
+          -s INVOKE_RUN=0 \
+          --preload-file ../mdlzork_810722@/game \
+          -s ALLOW_MEMORY_GROWTH=1 \
+          -s NO_EXIT_RUNTIME=1 \
+          -s ASSERTIONS=1
+
+# For production builds, add these optimizations:
+# EMFLAGS += -s AGGRESSIVE_VARIABLE_ELIMINATION=1 -s ELIMINATE_DUPLICATE_FUNCTIONS=1
+
+PERL = perl
+
+# Output files
+WASM_OUTPUT = mdli.js
+
+# Temporary generated files
+TMPSRCS = mdl_builtins.cpp mdl_builtin_types.cpp mdl_builtin_types.h mdl_builtins.h copying.c
+
+# Source files
+CXXSRCS = macros.cpp mdli.cpp mdl_builtins.cpp mdl_builtin_types.cpp \
+          mdl_read.cpp mdl_output.cpp mdl_binary_io.cpp mdl_decl.cpp mdl_assoc.cpp
+
+CSRCS = mdl_strbuf.c copying.c
+
+CXXSRCS_EXTRA = gc_stub.cpp
+
+OBJS = $(CXXSRCS:.cpp=.wasm.o) $(CXXSRCS_EXTRA:.cpp=.wasm.o) $(CSRCS:.c=.wasm.o)
+
+# Main target
+all: $(WASM_OUTPUT)
+
+$(WASM_OUTPUT): $(OBJS)
+	$(CXX) $(CXXFLAGS) $(EMFLAGS) -o $@ $^
+
+# Pattern rules for WASM object files
+%.wasm.o: %.cpp
+	$(CXX) $(CXXFLAGS) -c -o $@ $<
+
+%.wasm.o: %.c
+	$(CC) $(CFLAGS) -c -o $@ $<
+
+# Generated source files (same as native build)
+copying.c: COPYING
+	awk 'BEGIN { print "const char copying [] = " } /END OF TERMS AND CONDITIONS/ { nextfile } { gsub("\"", "\\\"", $$0); print "\"" $$0 "\\n\""  } END { print ";" }'  < COPYING > copying.c
+
+mdl_builtins.o: mdl_builtins.h
+
+mdl_builtins.cpp: macros.cpp
+	$(PERL) find_builtins.pl $(@:.cpp=.h) < $< > $@	
+
+mdl_builtin_types.o: mdl_builtin_types.h
+mdl_builtin_types.h: mdl_builtin_types.cpp ;
+mdl_builtins.h: mdl_builtins.cpp ;
+
+mdl_builtin_types.cpp: macros.hpp mdl_builtins.h
+	$(PERL) make_types.pl $(@:.cpp=.h) < $< > $@	
+
+# Dependencies
+macros.wasm.o: mdl_builtin_types.h mdl_builtins.h mdl_internal_defs.h wasm_config.h
+mdl_output.wasm.o: mdl_builtin_types.h mdl_builtins.h mdl_internal_defs.h
+mdl_read.wasm.o: mdl_builtin_types.h mdl_builtins.h mdl_internal_defs.h
+mdl_binary_io.wasm.o: mdl_builtin_types.h mdl_builtins.h mdl_internal_defs.h
+mdli.wasm.o: wasm_config.h
+gc_stub.wasm.o: gc_stub.h wasm_config.h
+
+clean-wasm:
+	rm -f *.wasm.o $(WASM_OUTPUT) mdli.wasm mdli.data *~
+
+clean: clean-wasm
+
+extraclean: clean
+	rm -f $(TMPSRCS)
+
+.PHONY: all clean clean-wasm extraclean

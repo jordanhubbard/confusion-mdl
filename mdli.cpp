@@ -18,7 +18,11 @@
 /*****************************************************************************/
 #include <stdio.h>
 #include <stdlib.h>
+#ifdef USE_GC_STUB
+#include "gc_stub.h"
+#else
 #include <gc/gc.h>
+#endif
 #include <getopt.h>
 #include "macros.hpp"
 #include "mdl_internal_defs.h"
