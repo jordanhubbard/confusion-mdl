@@ -39,8 +39,10 @@ EMFLAGS = -s WASM=1 \
           -s FORCE_FILESYSTEM=1 \
           -s EXIT_RUNTIME=0 \
           -s INVOKE_RUN=0 \
-          --preload-file ../mdlzork_810722@/game \
-          -s ALLOW_MEMORY_GROWTH=1 \
+          --preload-file ../mdlzork_771212@/games/zork-771212 \
+          --preload-file ../mdlzork_780124@/games/zork-780124 \
+          --preload-file ../mdlzork_791211@/games/zork-791211 \
+          --preload-file ../mdlzork_810722@/games/zork-810722 \
           -s NO_EXIT_RUNTIME=1 \
           -s ASSERTIONS=1
 
