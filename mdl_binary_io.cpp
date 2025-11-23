@@ -27,6 +27,9 @@
 #include <string.h>
 #include <stdio.h>
 
+// WASM input handling - must be included after stdio.h
+#include "wasm_input.h"
+
 using __gnu_cxx::hash_set;
 using __gnu_cxx::hash;
 using std::vector;

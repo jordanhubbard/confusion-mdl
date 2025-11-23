@@ -25,6 +25,9 @@
 #include <errno.h>
 #include <unistd.h>
 
+// WASM input handling - must be included after stdio.h
+#include "wasm_input.h"
+
 #define BANGCHAR(ch) (('!' << 8) | (ch))
 #define IS_BANGCHAR(ch) (((ch) >> 8) == '!')
 #define STRIPBANG(ch) (ch & 0xFF)

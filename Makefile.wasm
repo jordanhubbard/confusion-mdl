@@ -43,8 +43,10 @@ EMFLAGS = -s WASM=1 \
           --preload-file ../mdlzork_780124@/games/zork-780124 \
           --preload-file ../mdlzork_791211@/games/zork-791211 \
           --preload-file ../mdlzork_810722@/games/zork-810722 \
-          -s NO_EXIT_RUNTIME=1 \
-          -s ASSERTIONS=1
+          -s ASSERTIONS=1 \
+          -s ASYNCIFY=1 \
+          -s ASYNCIFY_STACK_SIZE=24576 \
+          -s ASYNCIFY_IMPORTS='["emscripten_sleep","invoke_iii","invoke_iiii","invoke_iiiii"]'
 
 # For production builds, add these optimizations:
 # EMFLAGS += -s AGGRESSIVE_VARIABLE_ELIMINATION=1 -s ELIMINATE_DUPLICATE_FUNCTIONS=1
