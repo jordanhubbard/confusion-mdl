@@ -5,12 +5,6 @@
 EMCC = emcc
 EMXX = em++
 
-# Check if Emscripten is available
-EMSCRIPTEN_CHECK := $(shell command -v emcc 2>/dev/null)
-ifndef EMSCRIPTEN_CHECK
-    $(error Emscripten not found. Please install: https://emscripten.org/docs/getting_started/downloads.html)
-endif
-
 # Standard compiler flags
 CDEBUGFLAGS = -g
 COPTFLAGS = -O2
@@ -53,8 +47,12 @@ GAME_DIRS ?=
 # Build preload flags for each game directory
 GAME_PRELOAD := $(foreach dir,$(GAME_DIRS),$(if $(wildcard $(dir)),--preload-file $(dir)@/game/$(notdir $(dir)),))
 
+# Check if Emscripten is available (only when building, not cleaning)
+check-emscripten:
+	@command -v emcc >/dev/null 2>&1 || (echo "❌ Emscripten not found. Please install: https://emscripten.org/docs/getting_started/downloads.html" && exit 1)
+
 # WASM build target
-mdli.js: $(OBJS)
+mdli.js: check-emscripten $(OBJS)
 	@echo "Linking WASM module..."
 	@if [ -n "$(GAME_DIRS)" ]; then \
 		echo "Preloading game files from: $(GAME_DIRS)"; \
@@ -104,6 +102,6 @@ mdl_read.wasm.o: mdl_builtin_types.h mdl_builtins.h mdl_internal_defs.h
 mdl_binary_io.wasm.o: mdl_builtin_types.h mdl_builtins.h mdl_internal_defs.h
 
 clean-wasm:
-	rm -f *.wasm.o *.wasm *.js $(PROGRAMS)
+	rm -f *.wasm.o mdli.wasm mdli.js mdli.data
 
 .PHONY: clean-wasm
