@@ -1,117 +1,109 @@
-#   'Confusion', a MDL interpreter - WebAssembly Build
-#   Copyright 2009 Matthew T. Russotto
-#   WASM build configuration added 2025
-#
-#   This program is free software: you can redistribute it and/or modify
-#   it under the terms of the GNU General Public License as published by
-#   the Free Software Foundation, either version 3 of the License, or
-#   (at your option) any later version.
+# WASM Makefile for Confusion MDL Interpreter
+# Builds the interpreter as WebAssembly for browser execution
 
-# Use Emscripten compiler
-CC = emcc
-CXX = em++
+# Emscripten compiler
+EMCC = emcc
+EMXX = em++
 
-# Build flags
+# Check if Emscripten is available
+EMSCRIPTEN_CHECK := $(shell command -v emcc 2>/dev/null)
+ifndef EMSCRIPTEN_CHECK
+    $(error Emscripten not found. Please install: https://emscripten.org/docs/getting_started/downloads.html)
+endif
+
+# Standard compiler flags
 CDEBUGFLAGS = -g
-COPTFLAGS = -O3
-CWARNFLAGS = -Wall -Wno-switch
+COPTFLAGS = -O2
+CWARNFLAGS = -Wall -Wno-switch -Wno-unused-but-set-variable
 
-# WASM-specific defines
-WASMDEFINES = -DUSE_GC_STUB -D__EMSCRIPTEN__ -DGC_STUB
+# Emscripten-specific flags
+EMCC_FLAGS = \
+	-s WASM=1 \
+	-s EXPORTED_RUNTIME_METHODS='["ccall","cwrap","FS","print","printErr"]' \
+	-s ALLOW_MEMORY_GROWTH=1 \
+	-s MODULARIZE=1 \
+	-s EXPORT_NAME="createModule" \
+	-s INITIAL_MEMORY=16MB \
+	-s MAXIMUM_MEMORY=256MB \
+	-O2 \
+	-DEMSCRIPTEN \
+	-D__EMSCRIPTEN__
 
-# Include paths
-INCLUDES = -I.
-
-# Compiler flags
-CFLAGS = $(CDEBUGFLAGS) $(COPTFLAGS) $(CWARNFLAGS) $(WASMDEFINES) $(INCLUDES)
-CXXFLAGS = $(CDEBUGFLAGS) $(COPTFLAGS) $(CWARNFLAGS) $(WASMDEFINES) $(INCLUDES)
-
-# Emscripten-specific linker flags
-EMFLAGS = -s WASM=1 \
-          -s ALLOW_MEMORY_GROWTH=1 \
-          -s INITIAL_MEMORY=16777216 \
-          -s MAXIMUM_MEMORY=268435456 \
-          -s STACK_SIZE=5242880 \
-          -s MODULARIZE=1 \
-          -s EXPORT_NAME='createMDLI' \
-          -s EXPORTED_FUNCTIONS='["_main"]' \
-          -s EXPORTED_RUNTIME_METHODS='["FS","callMain","TTY","ccall","cwrap"]' \
-          -s FORCE_FILESYSTEM=1 \
-          -s EXIT_RUNTIME=0 \
-          -s INVOKE_RUN=0 \
-          --preload-file ../mdlzork_771212@/games/zork-771212 \
-          --preload-file ../mdlzork_780124@/games/zork-780124 \
-          --preload-file ../mdlzork_791211@/games/zork-791211 \
-          --preload-file ../mdlzork_810722@/games/zork-810722 \
-          -s ASSERTIONS=1 \
-          -s ASYNCIFY=1 \
-          -s ASYNCIFY_STACK_SIZE=24576 \
-          -s ASYNCIFY_IMPORTS='["emscripten_sleep","invoke_iii","invoke_iiii","invoke_iiiii"]'
-
-# For production builds, add these optimizations:
-# EMFLAGS += -s AGGRESSIVE_VARIABLE_ELIMINATION=1 -s ELIMINATE_DUPLICATE_FUNCTIONS=1
+# For WASM, we don't link against GC library (using gc_stub.h instead)
+CFLAGS = $(CDEBUGFLAGS) $(COPTFLAGS) $(CWARNFLAGS) $(EMCC_FLAGS)
+CXXFLAGS = $(CDEBUGFLAGS) $(COPTFLAGS) $(CWARNFLAGS) $(EMCC_FLAGS)
 
 PERL = perl
 
-# Output files
-WASM_OUTPUT = mdli.js
+PROGRAMS = mdli.js mdli.wasm
 
-# Temporary generated files
 TMPSRCS = mdl_builtins.cpp mdl_builtin_types.cpp mdl_builtin_types.h mdl_builtins.h copying.c
 
-# Source files
-CXXSRCS = macros.cpp mdli.cpp mdl_builtins.cpp mdl_builtin_types.cpp \
-          mdl_read.cpp mdl_output.cpp mdl_binary_io.cpp mdl_decl.cpp mdl_assoc.cpp
+# Use mdli_wasm.cpp for JavaScript-friendly API (required for WASM exports)
+CXXSRCS = macros.cpp mdli_wasm.cpp mdl_builtins.cpp mdl_builtin_types.cpp mdl_read.cpp mdl_output.cpp mdl_binary_io.cpp mdl_decl.cpp mdl_assoc.cpp
 
 CSRCS = mdl_strbuf.c copying.c
 
-CXXSRCS_EXTRA = gc_stub.cpp
+OBJS = $(CXXSRCS:.cpp=.wasm.o) $(CSRCS:.c=.wasm.o)
 
-OBJS = $(CXXSRCS:.cpp=.wasm.o) $(CXXSRCS_EXTRA:.cpp=.wasm.o) $(CSRCS:.c=.wasm.o)
+# Game files to preload (optional - can be set via environment variable)
+# If GAME_DIRS is not set, build will work without game files (users can load via UI)
+# GAME_DIRS should be a space-separated list of directories to preload
+GAME_DIRS ?= 
+# Build preload flags for each game directory
+GAME_PRELOAD := $(foreach dir,$(GAME_DIRS),$(if $(wildcard $(dir)),--preload-file $(dir)@/game/$(notdir $(dir)),))
 
-# Main target
-all: $(WASM_OUTPUT)
+# WASM build target
+mdli.js: $(OBJS)
+	@echo "Linking WASM module..."
+	@if [ -n "$(GAME_DIRS)" ]; then \
+		echo "Preloading game files from: $(GAME_DIRS)"; \
+		for dir in $(GAME_DIRS); do \
+			if [ -d "$$dir" ]; then \
+				echo "  - $$dir -> /game/$$(basename $$dir)"; \
+			else \
+				echo "  ⚠️  Warning: $$dir not found"; \
+			fi; \
+		done; \
+	else \
+		echo "Building without preloaded game files (users can load files via UI)"; \
+	fi
+	$(EMXX) $(CXXFLAGS) -o $@ $^ \
+		-s EXPORTED_FUNCTIONS='["_mdl_interp_init_wasm","_mdl_start_game","_main_wasm"]' \
+		$(GAME_PRELOAD)
 
-$(WASM_OUTPUT): $(OBJS)
-	$(CXX) $(CXXFLAGS) $(EMFLAGS) -o $@ $^
-
-# Pattern rules for WASM object files
+# Compile C++ files to WASM object files
 %.wasm.o: %.cpp
-	$(CXX) $(CXXFLAGS) -c -o $@ $<
+	@echo "Compiling $<..."
+	$(EMXX) $(CXXFLAGS) -c -o $@ $<
 
+# Compile C files to WASM object files  
 %.wasm.o: %.c
-	$(CC) $(CFLAGS) -c -o $@ $<
+	@echo "Compiling $<..."
+	$(EMCC) $(CFLAGS) -c -o $@ $<
 
-# Generated source files (same as native build)
+# Generate builtin files (same as regular Makefile)
 copying.c: COPYING
 	awk 'BEGIN { print "const char copying [] = " } /END OF TERMS AND CONDITIONS/ { nextfile } { gsub("\"", "\\\"", $$0); print "\"" $$0 "\\n\""  } END { print ";" }'  < COPYING > copying.c
 
 mdl_builtins.o: mdl_builtins.h
-
 mdl_builtins.cpp: macros.cpp
-	$(PERL) find_builtins.pl $(@:.cpp=.h) < $< > $@	
+	$(PERL) find_builtins.pl $(@:.cpp=.h) < $< > $@
 
 mdl_builtin_types.o: mdl_builtin_types.h
 mdl_builtin_types.h: mdl_builtin_types.cpp ;
 mdl_builtins.h: mdl_builtins.cpp ;
 
 mdl_builtin_types.cpp: macros.hpp mdl_builtins.h
-	$(PERL) make_types.pl $(@:.cpp=.h) < $< > $@	
+	$(PERL) make_types.pl $(@:.cpp=.h) < $< > $@
 
 # Dependencies
-macros.wasm.o: mdl_builtin_types.h mdl_builtins.h mdl_internal_defs.h wasm_config.h
+macros.wasm.o: mdl_builtin_types.h mdl_builtins.h mdl_internal_defs.h
 mdl_output.wasm.o: mdl_builtin_types.h mdl_builtins.h mdl_internal_defs.h
 mdl_read.wasm.o: mdl_builtin_types.h mdl_builtins.h mdl_internal_defs.h
 mdl_binary_io.wasm.o: mdl_builtin_types.h mdl_builtins.h mdl_internal_defs.h
-mdli.wasm.o: wasm_config.h
-gc_stub.wasm.o: gc_stub.h wasm_config.h
 
 clean-wasm:
-	rm -f *.wasm.o $(WASM_OUTPUT) mdli.wasm mdli.data *~
+	rm -f *.wasm.o *.wasm *.js $(PROGRAMS)
 
-clean: clean-wasm
-
-extraclean: clean
-	rm -f $(TMPSRCS)
-
-.PHONY: all clean clean-wasm extraclean
+.PHONY: clean-wasm

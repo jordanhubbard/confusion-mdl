@@ -15,13 +15,26 @@
 #   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 CDEBUGFLAGS = -g -DGC_DEBUG
-COPTFLAGS = -O2
-CWARNFLAGS =  -Wall -Wno-switch
-GC_CFLAGS := $(shell pkg-config --cflags bdw-gc 2>/dev/null || echo "-I/opt/homebrew/include")
-GC_LIBS := $(shell pkg-config --libs bdw-gc 2>/dev/null || echo "-L/opt/homebrew/lib -lgc")
-LIBS = $(GC_LIBS) -lgccpp
-CFLAGS = $(CDEBUGFLAGS) $(COPTFLAGS) $(CWARNFLAGS) $(GC_CFLAGS)
-CXXFLAGS = $(CDEBUGFLAGS) $(COPTFLAGS) $(CWARNFLAGS) $(GC_CFLAGS)
+
+# Try pkg-config first, then fall back to common package manager paths
+# This uses shell commands to detect the best path configuration
+GC_CFLAGS := $(shell pkg-config --cflags bdw-gc 2>/dev/null || pkg-config --cflags gc 2>/dev/null || \
+  (test -d /opt/homebrew/include/gc && echo "-I/opt/homebrew/include") || \
+  (test -d /usr/local/include/gc && echo "-I/usr/local/include") || \
+  echo "")
+
+GC_LIBS := $(shell \
+  (pkg-config --libs bdw-gc 2>/dev/null && echo "-lgccpp") || \
+  (pkg-config --libs gc 2>/dev/null && echo "-lgccpp") || \
+  (test -d /opt/homebrew/include/gc && echo "-L/opt/homebrew/lib -lgc -lgccpp") || \
+  (test -d /usr/local/include/gc && echo "-L/usr/local/lib -lgc -lgccpp") || \
+  echo "-lgc -lgccpp")
+
+COPTFLAGS = -O2 $(GC_CFLAGS)
+CWARNFLAGS =  -Wall -Wno-switch -Wno-unused-but-set-variable
+LIBS = $(GC_LIBS)
+CFLAGS = $(CDEBUGFLAGS) $(COPTFLAGS) $(CWARNFLAGS)
+CXXFLAGS = $(CDEBUGFLAGS) $(COPTFLAGS) $(CWARNFLAGS)
 
 PERL = perl
 

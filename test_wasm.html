@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Zork WASM Test</title>
+    <style>
+        body {
+            font-family: monospace;
+            margin: 20px;
+            background: #1e1e1e;
+            color: #d4d4d4;
+        }
+        #terminal {
+            width: 100%;
+            height: 600px;
+            border: 1px solid #444;
+            background: #000;
+            padding: 10px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            line-height: 1.4;
+        }
+        #controls {
+            margin: 10px 0;
+        }
+        button {
+            padding: 8px 16px;
+            margin: 5px;
+            background: #007acc;
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        button:hover {
+            background: #005a9e;
+        }
+        button:disabled {
+            background: #555;
+            cursor: not-allowed;
+        }
+        #status {
+            margin: 10px 0;
+            padding: 10px;
+            background: #2d2d2d;
+            border-radius: 4px;
+        }
+        .error {
+            color: #f48771;
+        }
+        .success {
+            color: #4ec9b0;
+        }
+        #fileBrowser {
+            margin: 10px 0;
+            padding: 10px;
+            background: #2d2d2d;
+            border-radius: 4px;
+            display: none;
+        }
+        #fileBrowser h3 {
+            margin-top: 0;
+            color: #4ec9b0;
+        }
+        .file-section {
+            margin: 15px 0;
+        }
+        .file-section h4 {
+            color: #d4d4d4;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+        .file-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+        .file-item {
+            padding: 6px 12px;
+            background: #3d3d3d;
+            border: 1px solid #555;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.2s;
+        }
+        .file-item:hover {
+            background: #4d4d4d;
+            border-color: #007acc;
+        }
+        .file-item.selected {
+            background: #007acc;
+            border-color: #005a9e;
+        }
+        .file-item:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        .file-path {
+            font-size: 11px;
+            color: #888;
+            margin-top: 4px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Zork WASM Proof of Concept</h1>
+    
+    <div id="status">Status: Loading...</div>
+    
+    <div id="controls">
+        <button id="initBtn" onclick="initInterpreter()">Initialize Interpreter</button>
+        <button id="startBtn" onclick="startGame()" disabled>Start Game</button>
+    </div>
+    
+    <div id="fileBrowser">
+        <h3>Select Game</h3>
+        <div class="file-section">
+            <h4>Game Directory:</h4>
+            <div id="gameDirs" class="file-list"></div>
+            <div id="selectedGameDir" class="file-path"></div>
+        </div>
+        <div class="file-section">
+            <h4>Save File (REQUIRED to bootstrap game):</h4>
+            <div id="saveFiles" class="file-list"></div>
+            <div id="selectedSave" class="file-path"></div>
+        </div>
+    </div>
+    
+    <div id="terminal"></div>
+    
+    <script>
+        let Module = null;
+        let terminal = document.getElementById('terminal');
+        let statusDiv = document.getElementById('status');
+        let inputBuffer = [];
+        let inputCallback = null;
+        let selectedGameDir = null;
+        let selectedSaveFile = null;
+        
+        // Simple terminal output
+        function writeToTerminal(text) {
+            terminal.textContent += text;
+            terminal.scrollTop = terminal.scrollHeight;
+        }
+        
+        function setStatus(message, isError = false) {
+            statusDiv.textContent = 'Status: ' + message;
+            statusDiv.className = isError ? 'error' : 'success';
+        }
+        
+        // Load the WASM module
+        async function loadModule() {
+            setStatus('Loading WASM module...');
+            
+            // This will be replaced with actual module loading
+            // For now, we'll create a mock to test the interface
+            if (typeof createModule === 'undefined') {
+                setStatus('Error: mdli.js not found. Please build with: make -f Makefile.wasm', true);
+                writeToTerminal('Error: mdli.js module not found.\n');
+                writeToTerminal('To build:\n');
+                writeToTerminal('  1. Install Emscripten: https://emscripten.org/docs/getting_started/downloads.html\n');
+                writeToTerminal('  2. cd confusion-mdl\n');
+                writeToTerminal('  3. make -f Makefile.wasm\n');
+                writeToTerminal('  4. Copy mdli.js, mdli.wasm, and game files to this directory\n');
+                return;
+            }
+            
+            try {
+                // createModule returns a Promise when MODULARIZE=1
+                Module = await createModule({
+                    print: function(text) {
+                        writeToTerminal(text);
+                    },
+                    printErr: function(text) {
+                        writeToTerminal(text);
+                    },
+                    onRuntimeInitialized: function() {
+                        setStatus('WASM module loaded successfully');
+                        document.getElementById('initBtn').disabled = false;
+                        writeToTerminal('WASM module initialized.\n');
+                        writeToTerminal('Ready to initialize interpreter.\n');
+                    }
+                });
+            } catch (e) {
+                setStatus('Error loading module: ' + e.message, true);
+                writeToTerminal('Error loading WASM module: ' + e.message + '\n');
+            }
+        }
+        
+        // List files in Emscripten virtual file system
+        function listFiles(path) {
+            if (!Module || !Module.FS) return [];
+            try {
+                const files = Module.FS.readdir(path);
+                const result = [];
+                for (let i = 0; i < files.length; i++) {
+                    const name = files[i];
+                    if (name === '.' || name === '..') continue;
+                    try {
+                        const stat = Module.FS.stat(path + '/' + name);
+                        result.push({
+                            name: name,
+                            path: path + '/' + name,
+                            isDir: Module.FS.isDir(stat.mode)
+                        });
+                    } catch (e) {
+                        // Skip files we can't stat
+                    }
+                }
+                return result;
+            } catch (e) {
+                return [];
+            }
+        }
+        
+        // Find game directories (mdlzork_*)
+        function findGameDirectories(basePath) {
+            const results = [];
+            try {
+                const entries = listFiles(basePath);
+                for (const entry of entries) {
+                    if (entry.isDir && entry.name.startsWith('mdlzork_')) {
+                        results.push(entry);
+                    }
+                }
+            } catch (e) {
+                // Ignore errors
+            }
+            return results;
+        }
+        
+        // Recursively find files with specific extensions
+        function findFiles(path, extensions, maxDepth = 3) {
+            const results = [];
+            if (maxDepth <= 0) return results;
+            
+            const entries = listFiles(path);
+            for (const entry of entries) {
+                if (entry.isDir) {
+                    results.push(...findFiles(entry.path, extensions, maxDepth - 1));
+                } else {
+                    const ext = entry.name.split('.').pop().toLowerCase();
+                    if (extensions.includes(ext)) {
+                        results.push(entry);
+                    }
+                }
+            }
+            return results;
+        }
+        
+        // Populate file browser
+        function populateFileBrowser() {
+            if (!Module || !Module.FS) return;
+            
+            const gameDirsDiv = document.getElementById('gameDirs');
+            const saveFilesDiv = document.getElementById('saveFiles');
+            
+            // Find game directories (mdlzork_*)
+            const gameDirs = findGameDirectories('/game');
+            gameDirsDiv.innerHTML = '';
+            
+            if (gameDirs.length === 0) {
+                gameDirsDiv.innerHTML = '<div style="color: #888; font-size: 12px;">No game directories found. Make sure game files are preloaded.</div>';
+            } else {
+                gameDirs.forEach(dir => {
+                    const btn = document.createElement('button');
+                    btn.className = 'file-item';
+                    btn.textContent = dir.name;
+                    btn.onclick = (e) => {
+                        selectGameDir(dir.path, e.target);
+                        // Update save files for selected game
+                        updateSaveFiles(dir.path);
+                    };
+                    gameDirsDiv.appendChild(btn);
+                });
+            }
+            
+            // Initially show all save files
+            updateSaveFiles('/game');
+        }
+        
+        function updateSaveFiles(gameDir) {
+            const saveFilesDiv = document.getElementById('saveFiles');
+            if (!Module || !Module.FS) return;
+            
+            // First, check SAVEFILE directory specifically
+            const savefileDir = gameDir ? gameDir + '/SAVEFILE' : '/game/SAVEFILE';
+            let savefileFiles = [];
+            try {
+                if (Module.FS.analyzePath(savefileDir).exists) {
+                    const entries = Module.FS.readdir(savefileDir);
+                    entries.forEach(entry => {
+                        if (entry !== '.' && entry !== '..') {
+                            const entryPath = savefileDir + '/' + entry;
+                            const stat = Module.FS.stat(entryPath);
+                            if (stat && stat.isFile()) {
+                                savefileFiles.push({
+                                    path: entryPath,
+                                    relPath: 'SAVEFILE/' + entry,
+                                    name: entry
+                                });
+                            }
+                        }
+                    });
+                }
+            } catch (e) {
+                // SAVEFILE directory doesn't exist or can't be read
+            }
+            
+            // If exactly one file in SAVEFILE, auto-select it
+            if (savefileFiles.length === 1) {
+                saveFilesDiv.innerHTML = '<div style="color: #0a0; font-size: 12px;">Auto-selected: ' + savefileFiles[0].relPath + '</div>';
+                selectedSaveFile = savefileFiles[0].relPath;
+                document.getElementById('selectedSave').textContent = 'Selected: ' + savefileFiles[0].relPath;
+                return;
+            }
+            
+            // Otherwise, find all save files
+            const allSaveFiles = findFiles(gameDir || '/game', ['save']);
+            saveFilesDiv.innerHTML = '';
+            
+            if (allSaveFiles.length === 0) {
+                saveFilesDiv.innerHTML = '<div style="color: #888; font-size: 12px;">No save files found in ' + (gameDir || '/game') + '</div>';
+            } else {
+                // If multiple files in SAVEFILE, highlight that selection is required
+                if (savefileFiles.length > 1) {
+                    const warning = document.createElement('div');
+                    warning.style.cssText = 'color: #f80; font-size: 12px; margin-bottom: 8px; font-weight: bold;';
+                    warning.textContent = 'Multiple save files in SAVEFILE - please select one:';
+                    saveFilesDiv.appendChild(warning);
+                }
+                
+                allSaveFiles.forEach(file => {
+                    const btn = document.createElement('button');
+                    btn.className = 'file-item';
+                    // Show relative path from game directory
+                    const relPath = gameDir ? file.path.replace(gameDir + '/', '') : file.path;
+                    btn.textContent = relPath;
+                    btn.onclick = (e) => {
+                        selectSaveFile(relPath, e.target);
+                    };
+                    saveFilesDiv.appendChild(btn);
+                });
+            }
+        }
+        
+        function selectGameDir(path, button) {
+            selectedGameDir = path;
+            selectedSaveFile = null; // Clear previous selection
+            document.getElementById('selectedGameDir').textContent = 'Selected: ' + path;
+            document.getElementById('selectedSave').textContent = '';
+            // Update button states
+            document.querySelectorAll('#gameDirs .file-item').forEach(btn => {
+                btn.classList.remove('selected');
+            });
+            if (button) button.classList.add('selected');
+            // Update save files for selected game (will auto-select if exactly one in SAVEFILE)
+            updateSaveFiles(path);
+            // If no auto-selection happened, try to select a fallback save file
+            setTimeout(() => {
+                if (!selectedSaveFile) {
+                    const saveButtons = document.querySelectorAll('#saveFiles .file-item');
+                    if (saveButtons.length > 0) {
+                        // Priority: SAVEFILE (user's saves) > MDL/MADADV.SAVE > MTRZORK/ZORK.SAVE
+                        let preferred = null;
+                        saveButtons.forEach(btn => {
+                            const text = btn.textContent;
+                            if (!preferred) preferred = btn;
+                            // Highest priority: SAVEFILE (user's own save files)
+                            if (text.includes('SAVEFILE/')) preferred = btn;
+                            // Second priority: MDL/MADADV.SAVE (default bootstrap)
+                            else if (text.includes('MADADV.SAVE') && !preferred.textContent.includes('SAVEFILE')) preferred = btn;
+                            // Third priority: MTRZORK/ZORK.SAVE (now symlinked to working files)
+                            else if (text.includes('MTRZORK/') && !preferred.textContent.includes('SAVEFILE') && !preferred.textContent.includes('MADADV')) preferred = btn;
+                        });
+                        if (preferred) {
+                            preferred.click();
+                        }
+                    }
+                }
+            }, 150);
+        }
+        
+        function selectSaveFile(path, button) {
+            selectedSaveFile = path;
+            document.getElementById('selectedSave').textContent = 'Selected: ' + path;
+            // Update button states
+            document.querySelectorAll('#saveFiles .file-item').forEach(btn => {
+                btn.classList.remove('selected');
+            });
+            if (button) button.classList.add('selected');
+        }
+        
+        function initInterpreter() {
+            if (!Module) {
+                setStatus('Error: Module not loaded', true);
+                return;
+            }
+            
+            try {
+                Module.ccall('mdl_interp_init_wasm', null, [], []);
+                setStatus('Interpreter initialized');
+                document.getElementById('startBtn').disabled = false;
+                writeToTerminal('Interpreter initialized successfully.\n');
+                
+                // Show file browser and populate it
+                document.getElementById('fileBrowser').style.display = 'block';
+                populateFileBrowser();
+            } catch (e) {
+                setStatus('Error initializing: ' + e.message, true);
+                writeToTerminal('Error: ' + e.message + '\n');
+            }
+        }
+        
+        function startGame() {
+            if (!Module) {
+                setStatus('Error: Module not loaded', true);
+                return;
+            }
+            
+            if (!selectedGameDir) {
+                setStatus('Please select a game directory first', true);
+                writeToTerminal('Error: No game directory selected. Please select a game (mdlzork_*) from the list above.\n');
+                return;
+            }
+            
+            if (!selectedSaveFile) {
+                setStatus('Please select a save file first', true);
+                writeToTerminal('Error: Save file is REQUIRED to bootstrap the game.\n');
+                writeToTerminal('Please select a save file from the list above (e.g., SAVEFILE/ZORK.SAVE, MTRZORK/ZORK.SAVE, or MDL/MADADV.SAVE)\n');
+                return;
+            }
+            
+            try {
+                writeToTerminal('\n--- Starting game: ' + selectedGameDir);
+                writeToTerminal(' with save file: ' + selectedSaveFile);
+                writeToTerminal(' ---\n');
+                // Call with game directory and save file (required)
+                Module.ccall('mdl_start_game', null, ['string', 'string'], [selectedGameDir, selectedSaveFile]);
+            } catch (e) {
+                setStatus('Error starting game: ' + e.message, true);
+                writeToTerminal('Error: ' + e.message + '\n');
+            }
+        }
+        
+        function loadSaveFile() {
+            // Same as startGame - just use the selected save file
+            startGame();
+        }
+        
+        // Handle keyboard input
+        document.addEventListener('keydown', function(e) {
+            if (Module && !e.ctrlKey && !e.metaKey) {
+                // Send character to stdin if module is ready
+                // This is a simplified version - real implementation would buffer input
+            }
+        });
+        
+        // Load module on page load
+        window.addEventListener('load', function() {
+            // Try to load the module
+            const script = document.createElement('script');
+            script.src = 'mdli.js';
+            script.onerror = function() {
+                setStatus('mdli.js not found. See instructions above.', true);
+            };
+            script.onload = function() {
+                // Wait a bit for script to initialize, then load module
+                setTimeout(loadModule, 100);
+            };
+            document.head.appendChild(script);
+        });
+    </script>
+</body>
+</html>

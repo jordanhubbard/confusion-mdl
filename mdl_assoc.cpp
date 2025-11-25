@@ -16,11 +16,7 @@
 /*    You should have received a copy of the GNU General Public License     */
 /*    along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 /*****************************************************************************/
-#ifdef USE_GC_STUB
 #include "gc_stub.h"
-#else
-#include <gc/gc.h>
-#endif
 #include <string.h>
 #include <unistd.h>
 #include "macros.hpp"
@@ -56,7 +52,7 @@ mdl_create_assoc_table()
 {
     mdl_assoc_table_t *result = (mdl_assoc_table_t *)GC_MALLOC(sizeof(mdl_assoc_table_t) + sizeof(mdl_assoc_t *) * (MDL_ASSOC_NBUCKETS - 1));
     result->nbuckets = (MDL_ASSOC_NBUCKETS - 1);
-    result->last_clean = GC_gc_no;
+    result->last_clean = GC_get_gc_no();
     return result;
 }
 
@@ -64,7 +60,7 @@ void mdl_clear_assoc_table(mdl_assoc_table_t *table)
 {
     // Garbage collection does make some things easier...
     memset(table->buckets, 0, sizeof(table->buckets[0])*table->nbuckets);
-    table->last_clean = GC_gc_no;
+    table->last_clean = GC_get_gc_no();
     table->size = 0;
 }
 
@@ -104,7 +100,7 @@ static mdl_assoc_t *mdl_find_assoc(mdl_assoc_table_t *table, mdl_assoc_key_t *in
     mdl_assoc_t *cursor;
     int bucketnum;
 
-    if (table->last_clean != GC_gc_no) mdl_assoc_clean(table);
+    if (table->last_clean != GC_get_gc_no()) mdl_assoc_clean(table);
     bucketnum = mdl_hash_assoc_key(inkey) % table->nbuckets;
     cursor = table->buckets[bucketnum];
     while (cursor)
@@ -130,7 +126,7 @@ mdl_value_t *mdl_delete_assoc(mdl_assoc_table_t *table, mdl_assoc_key_t *inkey)
     mdl_assoc_t *cursor, *lastcursor;
     int bucketnum;
 
-    if (table->last_clean != GC_gc_no) mdl_assoc_clean(table);
+    if (table->last_clean != GC_get_gc_no()) mdl_assoc_clean(table);
     bucketnum = mdl_hash_assoc_key(inkey) % table->nbuckets;
     cursor = table->buckets[bucketnum];
     if (!cursor) return NULL; // no bucket means there was no such association
@@ -207,7 +203,7 @@ mdl_assoc_clean(mdl_assoc_table_t *table)
         else
             mdl_assoc_iterator_increment(iter);
     }
-    table->last_clean = GC_gc_no;
+    table->last_clean = GC_get_gc_no();
 //    fprintf(stderr, "ASSOC cleaning done %d\n", table->size);
     return result;
 }

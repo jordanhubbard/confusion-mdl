@@ -3,7 +3,7 @@
 
 // Single threaded MINIMAL_RUNTIME programs do not need access to
 // document.currentScript, so a simple export declaration is enough.
-var createMDLI = (() => {
+var createModule = (() => {
   // When MODULARIZE this JS may be executed later,
   // after document.currentScript is gone, so we save it.
   // In EXPORT_ES6 mode we can just use 'import.meta.url'.
@@ -13,48 +13,6 @@ var createMDLI = (() => {
 
 // include: shell.js
 // include: minimum_runtime_check.js
-(function() {
-  // "30.0.0" -> 300000
-  function humanReadableVersionToPacked(str) {
-    str = str.split('-')[0]; // Remove any trailing part from e.g. "12.53.3-alpha"
-    var vers = str.split('.').slice(0, 3);
-    while(vers.length < 3) vers.push('00');
-    vers = vers.map((n, i, arr) => n.padStart(2, '0'));
-    return vers.join('');
-  }
-  // 300000 -> "30.0.0"
-  var packedVersionToHumanReadable = n => [n / 10000 | 0, (n / 100 | 0) % 100, n % 100].join('.');
-
-  var TARGET_NOT_SUPPORTED = 2147483647;
-
-  // Note: We use a typeof check here instead of optional chaining using
-  // globalThis because older browsers might not have globalThis defined.
-  var currentNodeVersion = typeof process !== 'undefined' && process.versions?.node ? humanReadableVersionToPacked(process.versions.node) : TARGET_NOT_SUPPORTED;
-  if (currentNodeVersion < 160000) {
-    throw new Error(`This emscripten-generated code requires node v${ packedVersionToHumanReadable(160000) } (detected v${packedVersionToHumanReadable(currentNodeVersion)})`);
-  }
-
-  var userAgent = typeof navigator !== 'undefined' && navigator.userAgent;
-  if (!userAgent) {
-    return;
-  }
-
-  var currentSafariVersion = userAgent.includes("Safari/") && userAgent.match(/Version\/(\d+\.?\d*\.?\d*)/) ? humanReadableVersionToPacked(userAgent.match(/Version\/(\d+\.?\d*\.?\d*)/)[1]) : TARGET_NOT_SUPPORTED;
-  if (currentSafariVersion < 150000) {
-    throw new Error(`This emscripten-generated code requires Safari v${ packedVersionToHumanReadable(150000) } (detected v${currentSafariVersion})`);
-  }
-
-  var currentFirefoxVersion = userAgent.match(/Firefox\/(\d+(?:\.\d+)?)/) ? parseFloat(userAgent.match(/Firefox\/(\d+(?:\.\d+)?)/)[1]) : TARGET_NOT_SUPPORTED;
-  if (currentFirefoxVersion < 79) {
-    throw new Error(`This emscripten-generated code requires Firefox v79 (detected v${currentFirefoxVersion})`);
-  }
-
-  var currentChromeVersion = userAgent.match(/Chrome\/(\d+(?:\.\d+)?)/) ? parseFloat(userAgent.match(/Chrome\/(\d+(?:\.\d+)?)/)[1]) : TARGET_NOT_SUPPORTED;
-  if (currentChromeVersion < 85) {
-    throw new Error(`This emscripten-generated code requires Chrome v85 (detected v${currentChromeVersion})`);
-  }
-})();
-
 // end include: minimum_runtime_check.js
 // The Module object: Our interface to the outside world. We import
 // and export values on it. There are various ways Module can be used:
@@ -84,7 +42,7 @@ var ENVIRONMENT_IS_SHELL = !ENVIRONMENT_IS_WEB && !ENVIRONMENT_IS_NODE && !ENVIR
 
 // --pre-jses are emitted after the Module integration code, so that they can
 // refer to Module (if they choose; they can also define Module)
-// include: /var/folders/4y/29_p91xj5h1ggml153xr5t8h0000gp/T/tmpz6vkpp34.js
+// include: /var/folders/dv/lb6sy3v13xbfkd5x2130frlc0000gn/T/tmpb40dqo30.js
 
   if (!Module['expectedDataFileDownloads']) Module['expectedDataFileDownloads'] = 0;
   Module['expectedDataFileDownloads']++;
@@ -172,32 +130,32 @@ var ENVIRONMENT_IS_SHELL = !ENVIRONMENT_IS_WEB && !ENVIRONMENT_IS_NODE && !ENVIR
       function assert(check, msg) {
         if (!check) throw new Error(msg);
       }
-Module['FS_createPath']("/", "games", true, true);
-Module['FS_createPath']("/games", "zork-771212", true, true);
-Module['FS_createPath']("/games/zork-771212", "MDL", true, true);
-Module['FS_createPath']("/games/zork-771212", "SAVEFILE", true, true);
-Module['FS_createPath']("/games/zork-771212", "original_source", true, true);
-Module['FS_createPath']("/games/zork-771212/original_source", "zork", true, true);
-Module['FS_createPath']("/games/zork-771212/original_source/zork", "lcf", true, true);
-Module['FS_createPath']("/games/zork-771212/original_source/zork", "madman", true, true);
-Module['FS_createPath']("/games", "zork-780124", true, true);
-Module['FS_createPath']("/games/zork-780124", "MDL", true, true);
-Module['FS_createPath']("/games/zork-780124", "SAVEFILE", true, true);
-Module['FS_createPath']("/games/zork-780124", "original_source", true, true);
-Module['FS_createPath']("/games/zork-780124/original_source", "zork", true, true);
-Module['FS_createPath']("/games/zork-780124/original_source/zork", "ar1.random", true, true);
-Module['FS_createPath']("/games/zork-780124/original_source/zork", "lcf", true, true);
-Module['FS_createPath']("/games/zork-780124/original_source/zork", "madman", true, true);
-Module['FS_createPath']("/games/zork-780124/original_source/zork", "sys2", true, true);
-Module['FS_createPath']("/games/zork-780124/original_source/zork", "taa", true, true);
-Module['FS_createPath']("/games", "zork-791211", true, true);
-Module['FS_createPath']("/games/zork-791211", "MDL", true, true);
-Module['FS_createPath']("/games/zork-791211", "MTRZORK", true, true);
-Module['FS_createPath']("/games/zork-791211", "original_source", true, true);
-Module['FS_createPath']("/games", "zork-810722", true, true);
-Module['FS_createPath']("/games/zork-810722", "MDL", true, true);
-Module['FS_createPath']("/games/zork-810722", "MTRZORK", true, true);
-Module['FS_createPath']("/games/zork-810722", "original_source", true, true);
+Module['FS_createPath']("/", "game", true, true);
+Module['FS_createPath']("/game", "mdlzork_771212", true, true);
+Module['FS_createPath']("/game/mdlzork_771212", "MDL", true, true);
+Module['FS_createPath']("/game/mdlzork_771212", "SAVEFILE", true, true);
+Module['FS_createPath']("/game/mdlzork_771212", "original_source", true, true);
+Module['FS_createPath']("/game/mdlzork_771212/original_source", "zork", true, true);
+Module['FS_createPath']("/game/mdlzork_771212/original_source/zork", "lcf", true, true);
+Module['FS_createPath']("/game/mdlzork_771212/original_source/zork", "madman", true, true);
+Module['FS_createPath']("/game", "mdlzork_780124", true, true);
+Module['FS_createPath']("/game/mdlzork_780124", "MDL", true, true);
+Module['FS_createPath']("/game/mdlzork_780124", "SAVEFILE", true, true);
+Module['FS_createPath']("/game/mdlzork_780124", "original_source", true, true);
+Module['FS_createPath']("/game/mdlzork_780124/original_source", "zork", true, true);
+Module['FS_createPath']("/game/mdlzork_780124/original_source/zork", "ar1.random", true, true);
+Module['FS_createPath']("/game/mdlzork_780124/original_source/zork", "lcf", true, true);
+Module['FS_createPath']("/game/mdlzork_780124/original_source/zork", "madman", true, true);
+Module['FS_createPath']("/game/mdlzork_780124/original_source/zork", "sys2", true, true);
+Module['FS_createPath']("/game/mdlzork_780124/original_source/zork", "taa", true, true);
+Module['FS_createPath']("/game", "mdlzork_791211", true, true);
+Module['FS_createPath']("/game/mdlzork_791211", "MDL", true, true);
+Module['FS_createPath']("/game/mdlzork_791211", "MTRZORK", true, true);
+Module['FS_createPath']("/game/mdlzork_791211", "original_source", true, true);
+Module['FS_createPath']("/game", "mdlzork_810722", true, true);
+Module['FS_createPath']("/game/mdlzork_810722", "MDL", true, true);
+Module['FS_createPath']("/game/mdlzork_810722", "MTRZORK", true, true);
+Module['FS_createPath']("/game/mdlzork_810722", "original_source", true, true);
 
     for (var file of metadata['files']) {
       var name = file['filename']
@@ -238,25 +196,11 @@ Module['FS_createPath']("/games/zork-810722", "original_source", true, true);
     }
 
     }
-    loadPackage({"files": [{"filename": "/games/zork-771212/77act1.mud", "start": 0, "end": 87922}, {"filename": "/games/zork-771212/77act2.mud", "start": 87922, "end": 123426}, {"filename": "/games/zork-771212/77act3.mud", "start": 123426, "end": 139073}, {"filename": "/games/zork-771212/77defs.mud", "start": 139073, "end": 157306}, {"filename": "/games/zork-771212/77dung.mud", "start": 157306, "end": 255267}, {"filename": "/games/zork-771212/77loadall.mud", "start": 255267, "end": 255628}, {"filename": "/games/zork-771212/77makstr.mud", "start": 255628, "end": 265090}, {"filename": "/games/zork-771212/77np.mud", "start": 265090, "end": 284536}, {"filename": "/games/zork-771212/77patch.mud", "start": 284536, "end": 285410}, {"filename": "/games/zork-771212/77rooms.mud", "start": 285410, "end": 358642}, {"filename": "/games/zork-771212/78melee.mud", "start": 358642, "end": 385076}, {"filename": "/games/zork-771212/81prim.mud", "start": 385076, "end": 389665}, {"filename": "/games/zork-771212/81tell-repl.mud", "start": 389665, "end": 394612}, {"filename": "/games/zork-771212/MDL/MADADV.HELP", "start": 394612, "end": 398886}, {"filename": "/games/zork-771212/MDL/MADADV.INFO", "start": 398886, "end": 400413}, {"filename": "/games/zork-771212/MDL/MADADV.SAVE", "start": 400413, "end": 1280080}, {"filename": "/games/zork-771212/README.md", "start": 1280080, "end": 1284168}, {"filename": "/games/zork-771212/SAVEFILE/ZORK.SAVE", "start": 1284168, "end": 2157764}, {"filename": "/games/zork-771212/original_source/README.md", "start": 2157764, "end": 2161238}, {"filename": "/games/zork-771212/original_source/codemeta.json", "start": 2161238, "end": 2162478}, {"filename": "/games/zork-771212/original_source/tree.txt", "start": 2162478, "end": 2163684}, {"filename": "/games/zork-771212/original_source/zork/act2.27", "start": 2163684, "end": 2191576}, {"filename": "/games/zork-771212/original_source/zork/dung.56", "start": 2191576, "end": 2280157}, {"filename": "/games/zork-771212/original_source/zork/lcf/act1.37", "start": 2280157, "end": 2350164}, {"filename": "/games/zork-771212/original_source/zork/lcf/act1.38", "start": 2350164, "end": 2420166}, {"filename": "/games/zork-771212/original_source/zork/lcf/act2z.27", "start": 2420166, "end": 2448759}, {"filename": "/games/zork-771212/original_source/zork/lcf/act3.13", "start": 2448759, "end": 2461515}, {"filename": "/games/zork-771212/original_source/zork/lcf/defs.63", "start": 2461515, "end": 2476170}, {"filename": "/games/zork-771212/original_source/zork/lcf/dungz.56", "start": 2476170, "end": 2567638}, {"filename": "/games/zork-771212/original_source/zork/lcf/makstr.7", "start": 2567638, "end": 2575186}, {"filename": "/games/zork-771212/original_source/zork/lcf/makstr.nbin", "start": 2575186, "end": 2593513}, {"filename": "/games/zork-771212/original_source/zork/lcf/nact2.nbin", "start": 2593513, "end": 2644592}, {"filename": "/games/zork-771212/original_source/zork/lcf/ndefs.nbin", "start": 2644592, "end": 2661370}, {"filename": "/games/zork-771212/original_source/zork/lcf/nnp.nbin", "start": 2661370, "end": 2682032}, {"filename": "/games/zork-771212/original_source/zork/lcf/np.92", "start": 2682032, "end": 2696270}, {"filename": "/games/zork-771212/original_source/zork/lcf/np.93", "start": 2696270, "end": 2710561}, {"filename": "/games/zork-771212/original_source/zork/lcf/nrooms.nbin", "start": 2710561, "end": 2800325}, {"filename": "/games/zork-771212/original_source/zork/lcf/rooms.98", "start": 2800325, "end": 2854167}, {"filename": "/games/zork-771212/original_source/zork/lcf/rooms.99", "start": 2854167, "end": 2908143}, {"filename": "/games/zork-771212/original_source/zork/madman/madadv.help", "start": 2908143, "end": 2912403}, {"filename": "/games/zork-771212/original_source/zork/madman/madadv.save", "start": 2912403, "end": 3508862}, {"filename": "/games/zork-771212/original_source/zork/madman/omadad.save", "start": 3508862, "end": 4085247}, {"filename": "/games/zork-771212/run.mud", "start": 4085247, "end": 4085283}, {"filename": "/games/zork-780124/09tell-repl.mud", "start": 4085283, "end": 4090370}, {"filename": "/games/zork-780124/78act1.mud", "start": 4090370, "end": 4179872}, {"filename": "/games/zork-780124/78act2.mud", "start": 4179872, "end": 4215360}, {"filename": "/games/zork-780124/78act3.mud", "start": 4215360, "end": 4231605}, {"filename": "/games/zork-780124/78defs.mud", "start": 4231605, "end": 4252371}, {"filename": "/games/zork-780124/78dung.mud", "start": 4252371, "end": 4350969}, {"filename": "/games/zork-780124/78loadall.mud", "start": 4350969, "end": 4351388}, {"filename": "/games/zork-780124/78makstr.mud", "start": 4351388, "end": 4364486}, {"filename": "/games/zork-780124/78melee.mud", "start": 4364486, "end": 4390922}, {"filename": "/games/zork-780124/78mrf-patch.mud", "start": 4390922, "end": 4391757}, {"filename": "/games/zork-780124/78mrf.mud", "start": 4391757, "end": 4432170}, {"filename": "/games/zork-780124/78mrr.mud", "start": 4432170, "end": 4443241}, {"filename": "/games/zork-780124/78np.mud", "start": 4443241, "end": 4475322}, {"filename": "/games/zork-780124/78patch.mud", "start": 4475322, "end": 4476173}, {"filename": "/games/zork-780124/78rooms.mud", "start": 4476173, "end": 4552645}, {"filename": "/games/zork-780124/81prim.mud", "start": 4552645, "end": 4557236}, {"filename": "/games/zork-780124/MDL/MADADV.HELP", "start": 4557236, "end": 4562382}, {"filename": "/games/zork-780124/MDL/MADADV.INFO", "start": 4562382, "end": 4563909}, {"filename": "/games/zork-780124/MDL/MADADV.SAVE", "start": 4563909, "end": 5487076}, {"filename": "/games/zork-780124/README.md", "start": 5487076, "end": 5492045}, {"filename": "/games/zork-780124/SAVEFILE/ZORK.SAVE", "start": 5492045, "end": 6414413}, {"filename": "/games/zork-780124/original_source/README.md", "start": 6414413, "end": 6418683}, {"filename": "/games/zork-780124/original_source/codemeta.json", "start": 6418683, "end": 6419939}, {"filename": "/games/zork-780124/original_source/tree.txt", "start": 6419939, "end": 6423185}, {"filename": "/games/zork-780124/original_source/zork/act1.71", "start": 6423185, "end": 6494716}, {"filename": "/games/zork-780124/original_source/zork/act2.37", "start": 6494716, "end": 6522554}, {"filename": "/games/zork-780124/original_source/zork/act3.18", "start": 6522554, "end": 6535840}, {"filename": "/games/zork-780124/original_source/zork/ar1.random/conver.10", "start": 6535840, "end": 6537166}, {"filename": "/games/zork-780124/original_source/zork/ar1.random/dungon.11", "start": 6537166, "end": 6537789}, {"filename": "/games/zork-780124/original_source/zork/ar1.random/dxpray.xtaa12", "start": 6537789, "end": 6548191}, {"filename": "/games/zork-780124/original_source/zork/ar1.random/french.11", "start": 6548191, "end": 6548797}, {"filename": "/games/zork-780124/original_source/zork/ar1.random/fzork.7", "start": 6548797, "end": 6550113}, {"filename": "/games/zork-780124/original_source/zork/ar1.random/gfweep.96", "start": 6550113, "end": 6582886}, {"filename": "/games/zork-780124/original_source/zork/ar1.random/gfweep.97", "start": 6582886, "end": 6615713}, {"filename": "/games/zork-780124/original_source/zork/ar1.random/gunner.94", "start": 6615713, "end": 6646214}, {"filename": "/games/zork-780124/original_source/zork/ar1.random/holida.11", "start": 6646214, "end": 6648008}, {"filename": "/games/zork-780124/original_source/zork/ar1.random/j.1", "start": 6648008, "end": 6648979}, {"filename": "/games/zork-780124/original_source/zork/ar1.random/map.8", "start": 6648979, "end": 6655279}, {"filename": "/games/zork-780124/original_source/zork/ar1.random/mar._ddt_", "start": 6655279, "end": 6655589}, {"filename": "/games/zork-780124/original_source/zork/ar1.random/muddle.12", "start": 6655589, "end": 6659077}, {"filename": "/games/zork-780124/original_source/zork/ar1.random/pi.1", "start": 6659077, "end": 6659368}, {"filename": "/games/zork-780124/original_source/zork/ar1.random/plotso.grid", "start": 6659368, "end": 6659456}, {"filename": "/games/zork-780124/original_source/zork/ar1.random/setsn.1", "start": 6659456, "end": 6660394}, {"filename": "/games/zork-780124/original_source/zork/ar1.random/wdcnt.1", "start": 6660394, "end": 6660458}, {"filename": "/games/zork-780124/original_source/zork/ar1.random/zork.3", "start": 6660458, "end": 6666406}, {"filename": "/games/zork-780124/original_source/zork/dung.129", "start": 6666406, "end": 6755592}, {"filename": "/games/zork-780124/original_source/zork/lcf/act1.nbin", "start": 6755592, "end": 6880978}, {"filename": "/games/zork-780124/original_source/zork/lcf/act1z.71", "start": 6880978, "end": 6954333}, {"filename": "/games/zork-780124/original_source/zork/lcf/act2.nbin", "start": 6954333, "end": 7006594}, {"filename": "/games/zork-780124/original_source/zork/lcf/act2z.37", "start": 7006594, "end": 7035135}, {"filename": "/games/zork-780124/original_source/zork/lcf/act3z.18", "start": 7035135, "end": 7048739}, {"filename": "/games/zork-780124/original_source/zork/lcf/debug.zork", "start": 7048739, "end": 7048914}, {"filename": "/games/zork-780124/original_source/zork/lcf/defs.89", "start": 7048914, "end": 7065575}, {"filename": "/games/zork-780124/original_source/zork/lcf/defs.nbin", "start": 7065575, "end": 7084559}, {"filename": "/games/zork-780124/original_source/zork/lcf/dungz.129", "start": 7084559, "end": 7176630}, {"filename": "/games/zork-780124/original_source/zork/lcf/foo.bar", "start": 7176630, "end": 7176665}, {"filename": "/games/zork-780124/original_source/zork/lcf/load.7", "start": 7176665, "end": 7177132}, {"filename": "/games/zork-780124/original_source/zork/lcf/makstr.25", "start": 7177132, "end": 7187530}, {"filename": "/games/zork-780124/original_source/zork/lcf/makstr.nbin", "start": 7187530, "end": 7210192}, {"filename": "/games/zork-780124/original_source/zork/lcf/melee.105", "start": 7210192, "end": 7230941}, {"filename": "/games/zork-780124/original_source/zork/lcf/melee.nbin", "start": 7230941, "end": 7254349}, {"filename": "/games/zork-780124/original_source/zork/lcf/mrfz.65", "start": 7254349, "end": 7288108}, {"filename": "/games/zork-780124/original_source/zork/lcf/mrrz.56", "start": 7288108, "end": 7298801}, {"filename": "/games/zork-780124/original_source/zork/lcf/np.168", "start": 7298801, "end": 7323159}, {"filename": "/games/zork-780124/original_source/zork/lcf/np.nbin", "start": 7323159, "end": 7353813}, {"filename": "/games/zork-780124/original_source/zork/lcf/rooms.165", "start": 7353813, "end": 7409940}, {"filename": "/games/zork-780124/original_source/zork/lcf/rooms.nbin", "start": 7409940, "end": 7502970}, {"filename": "/games/zork-780124/original_source/zork/lcf/zork.files", "start": 7502970, "end": 7503095}, {"filename": "/games/zork-780124/original_source/zork/madman/madadv.help", "start": 7503095, "end": 7509187}, {"filename": "/games/zork-780124/original_source/zork/madman/madadv.save", "start": 7509187, "end": 8231575}, {"filename": "/games/zork-780124/original_source/zork/madman/madadv.save_0", "start": 8231575, "end": 8839239}, {"filename": "/games/zork-780124/original_source/zork/madman/madadv.save_1", "start": 8839239, "end": 8929844}, {"filename": "/games/zork-780124/original_source/zork/madman/madadv.save_2", "start": 8929844, "end": 9537835}, {"filename": "/games/zork-780124/original_source/zork/madman/madadv.save_3", "start": 9537835, "end": 10145626}, {"filename": "/games/zork-780124/original_source/zork/mrf.65", "start": 10145626, "end": 10178502}, {"filename": "/games/zork-780124/original_source/zork/mrr.56", "start": 10178502, "end": 10188873}, {"filename": "/games/zork-780124/original_source/zork/sys2/ts.zork", "start": 10188873, "end": 10199116}, {"filename": "/games/zork-780124/original_source/zork/sys2/ts.zork_0", "start": 10199116, "end": 10209364}, {"filename": "/games/zork-780124/original_source/zork/taa/ar1.random", "start": 10209364, "end": 10253952}, {"filename": "/games/zork-780124/original_source/zork/taa/ar1.random_0", "start": 10253952, "end": 10327933}, {"filename": "/games/zork-780124/original_source/zork/taa/ar1.random_1", "start": 10327933, "end": 10403241}, {"filename": "/games/zork-780124/original_source/zork/taa/ar1.random_2", "start": 10403241, "end": 10478553}, {"filename": "/games/zork-780124/run.mud", "start": 10478553, "end": 10478591}, {"filename": "/games/zork-791211/MDL/MADADV.DOC", "start": 10478591, "end": 10491961}, {"filename": "/games/zork-791211/MDL/MADADV.HELP", "start": 10491961, "end": 10492958}, {"filename": "/games/zork-791211/MDL/MADADV.INFO", "start": 10492958, "end": 10494758}, {"filename": "/games/zork-791211/MDL/MADADV.SAVE", "start": 10494758, "end": 12009302}, {"filename": "/games/zork-791211/MTRZORK/ZORK.SAVE", "start": 12009302, "end": 12059398}, {"filename": "/games/zork-791211/README.md", "start": 12059398, "end": 12073442}, {"filename": "/games/zork-791211/act1.mud", "start": 12073442, "end": 12157409}, {"filename": "/games/zork-791211/act2.mud", "start": 12157409, "end": 12191352}, {"filename": "/games/zork-791211/act3.mud", "start": 12191352, "end": 12255457}, {"filename": "/games/zork-791211/act4.mud", "start": 12255457, "end": 12302517}, {"filename": "/games/zork-791211/b.mud", "start": 12302517, "end": 12339641}, {"filename": "/games/zork-791211/defs.mud", "start": 12339641, "end": 12361674}, {"filename": "/games/zork-791211/disp1.mud", "start": 12361674, "end": 12365248}, {"filename": "/games/zork-791211/dung.mud", "start": 12365248, "end": 12564285}, {"filename": "/games/zork-791211/impl.mud", "start": 12564285, "end": 12601456}, {"filename": "/games/zork-791211/loadall.mud", "start": 12601456, "end": 12601946}, {"filename": "/games/zork-791211/makstr.mud", "start": 12601946, "end": 12616619}, {"filename": "/games/zork-791211/melee.mud", "start": 12616619, "end": 12632334}, {"filename": "/games/zork-791211/original_source/act1.253", "start": 12632334, "end": 12697731}, {"filename": "/games/zork-791211/original_source/act2.92", "start": 12697731, "end": 12723946}, {"filename": "/games/zork-791211/original_source/act3.198", "start": 12723946, "end": 12773671}, {"filename": "/games/zork-791211/original_source/act4.231", "start": 12773671, "end": 12810625}, {"filename": "/games/zork-791211/original_source/b.176", "start": 12810625, "end": 12835856}, {"filename": "/games/zork-791211/original_source/build.cmd", "start": 12835856, "end": 12839565}, {"filename": "/games/zork-791211/original_source/defs.171", "start": 12839565, "end": 12855769}, {"filename": "/games/zork-791211/original_source/disp1.2", "start": 12855769, "end": 12858739}, {"filename": "/games/zork-791211/original_source/dung.354", "start": 12858739, "end": 13031429}, {"filename": "/games/zork-791211/original_source/impl.123", "start": 13031429, "end": 13057748}, {"filename": "/games/zork-791211/original_source/makstr.44", "start": 13057748, "end": 13069097}, {"filename": "/games/zork-791211/original_source/melee.137", "start": 13069097, "end": 13080077}, {"filename": "/games/zork-791211/original_source/parser.130", "start": 13080077, "end": 13114399}, {"filename": "/games/zork-791211/original_source/points.txt", "start": 13114399, "end": 13116946}, {"filename": "/games/zork-791211/original_source/ppaper.txt", "start": 13116946, "end": 13133048}, {"filename": "/games/zork-791211/original_source/prim.9", "start": 13133048, "end": 13136170}, {"filename": "/games/zork-791211/original_source/rooms.393", "start": 13136170, "end": 13197853}, {"filename": "/games/zork-791211/original_source/sr.54", "start": 13197853, "end": 13210886}, {"filename": "/games/zork-791211/original_source/syntax.7", "start": 13210886, "end": 13213762}, {"filename": "/games/zork-791211/original_source/tape.999", "start": 13213762, "end": 13215078}, {"filename": "/games/zork-791211/original_source/tell.152", "start": 13215078, "end": 13244040}, {"filename": "/games/zork-791211/original_source/typhak.16", "start": 13244040, "end": 13247236}, {"filename": "/games/zork-791211/original_source/util.16", "start": 13247236, "end": 13254663}, {"filename": "/games/zork-791211/parser.mud", "start": 13254663, "end": 13300728}, {"filename": "/games/zork-791211/prim.mud", "start": 13300728, "end": 13305319}, {"filename": "/games/zork-791211/rooms.mud", "start": 13305319, "end": 13392213}, {"filename": "/games/zork-791211/run.mud", "start": 13392213, "end": 13392780}, {"filename": "/games/zork-791211/sr.mud", "start": 13392780, "end": 13409375}, {"filename": "/games/zork-791211/syntax.mud", "start": 13409375, "end": 13413816}, {"filename": "/games/zork-791211/tell-repl.mud", "start": 13413816, "end": 13418916}, {"filename": "/games/zork-791211/typhak.mud", "start": 13418916, "end": 13422837}, {"filename": "/games/zork-791211/util.mud", "start": 13422837, "end": 13431760}, {"filename": "/games/zork-810722/MDL/MADADV.DOC", "start": 13431760, "end": 13445130}, {"filename": "/games/zork-810722/MDL/MADADV.HELP", "start": 13445130, "end": 13446127}, {"filename": "/games/zork-810722/MDL/MADADV.INFO", "start": 13446127, "end": 13447927}, {"filename": "/games/zork-810722/MDL/MADADV.SAVE", "start": 13447927, "end": 14973170}, {"filename": "/games/zork-810722/MTRZORK/ZORK.SAVE", "start": 14973170, "end": 15023266}, {"filename": "/games/zork-810722/README.md", "start": 15023266, "end": 15031191}, {"filename": "/games/zork-810722/act1.mud", "start": 15031191, "end": 15115301}, {"filename": "/games/zork-810722/act2.mud", "start": 15115301, "end": 15149244}, {"filename": "/games/zork-810722/act3.mud", "start": 15149244, "end": 15213450}, {"filename": "/games/zork-810722/act4.mud", "start": 15213450, "end": 15260510}, {"filename": "/games/zork-810722/b.mud", "start": 15260510, "end": 15297634}, {"filename": "/games/zork-810722/defs.mud", "start": 15297634, "end": 15319667}, {"filename": "/games/zork-810722/disp1.mud", "start": 15319667, "end": 15323241}, {"filename": "/games/zork-810722/dung.mud", "start": 15323241, "end": 15522642}, {"filename": "/games/zork-810722/impl.mud", "start": 15522642, "end": 15559813}, {"filename": "/games/zork-810722/loadall.mud", "start": 15559813, "end": 15560303}, {"filename": "/games/zork-810722/makstr.mud", "start": 15560303, "end": 15574976}, {"filename": "/games/zork-810722/melee.mud", "start": 15574976, "end": 15590691}, {"filename": "/games/zork-810722/original_source/act1.254", "start": 15590691, "end": 15656171}, {"filename": "/games/zork-810722/original_source/act2.92", "start": 15656171, "end": 15682386}, {"filename": "/games/zork-810722/original_source/act3.199", "start": 15682386, "end": 15732179}, {"filename": "/games/zork-810722/original_source/act4.231", "start": 15732179, "end": 15769133}, {"filename": "/games/zork-810722/original_source/b.176", "start": 15769133, "end": 15794364}, {"filename": "/games/zork-810722/original_source/defs.171", "start": 15794364, "end": 15810568}, {"filename": "/games/zork-810722/original_source/disp1.2", "start": 15810568, "end": 15813538}, {"filename": "/games/zork-810722/original_source/dung.355", "start": 15813538, "end": 15986591}, {"filename": "/games/zork-810722/original_source/impl.123", "start": 15986591, "end": 16012910}, {"filename": "/games/zork-810722/original_source/makstr.44", "start": 16012910, "end": 16024259}, {"filename": "/games/zork-810722/original_source/melee.137", "start": 16024259, "end": 16035239}, {"filename": "/games/zork-810722/original_source/parser.130", "start": 16035239, "end": 16069561}, {"filename": "/games/zork-810722/original_source/prim.9", "start": 16069561, "end": 16072683}, {"filename": "/games/zork-810722/original_source/rooms.394", "start": 16072683, "end": 16135090}, {"filename": "/games/zork-810722/original_source/sr.54", "start": 16135090, "end": 16148123}, {"filename": "/games/zork-810722/original_source/syntax.7", "start": 16148123, "end": 16150999}, {"filename": "/games/zork-810722/original_source/tell.152", "start": 16150999, "end": 16179961}, {"filename": "/games/zork-810722/original_source/typhak.16", "start": 16179961, "end": 16183157}, {"filename": "/games/zork-810722/original_source/util.16", "start": 16183157, "end": 16190584}, {"filename": "/games/zork-810722/parser.mud", "start": 16190584, "end": 16236649}, {"filename": "/games/zork-810722/prim.mud", "start": 16236649, "end": 16241240}, {"filename": "/games/zork-810722/rooms.mud", "start": 16241240, "end": 16329454}, {"filename": "/games/zork-810722/run.mud", "start": 16329454, "end": 16330021}, {"filename": "/games/zork-810722/sr.mud", "start": 16330021, "end": 16346616}, {"filename": "/games/zork-810722/syntax.mud", "start": 16346616, "end": 16351057}, {"filename": "/games/zork-810722/tell-repl.mud", "start": 16351057, "end": 16356157}, {"filename": "/games/zork-810722/tell.mud", "start": 16356157, "end": 16369978}, {"filename": "/games/zork-810722/typhak.mud", "start": 16369978, "end": 16373899}, {"filename": "/games/zork-810722/util.mud", "start": 16373899, "end": 16382822}], "remote_package_size": 16382822});
+    loadPackage({"files": [{"filename": "/game/mdlzork_771212/77act1.mud", "start": 0, "end": 87922}, {"filename": "/game/mdlzork_771212/77act2.mud", "start": 87922, "end": 123426}, {"filename": "/game/mdlzork_771212/77act3.mud", "start": 123426, "end": 139073}, {"filename": "/game/mdlzork_771212/77defs.mud", "start": 139073, "end": 157306}, {"filename": "/game/mdlzork_771212/77dung.mud", "start": 157306, "end": 255267}, {"filename": "/game/mdlzork_771212/77loadall.mud", "start": 255267, "end": 255628}, {"filename": "/game/mdlzork_771212/77makstr.mud", "start": 255628, "end": 265090}, {"filename": "/game/mdlzork_771212/77np.mud", "start": 265090, "end": 284536}, {"filename": "/game/mdlzork_771212/77patch.mud", "start": 284536, "end": 285410}, {"filename": "/game/mdlzork_771212/77rooms.mud", "start": 285410, "end": 358642}, {"filename": "/game/mdlzork_771212/78melee.mud", "start": 358642, "end": 385076}, {"filename": "/game/mdlzork_771212/81prim.mud", "start": 385076, "end": 389665}, {"filename": "/game/mdlzork_771212/81tell-repl.mud", "start": 389665, "end": 394612}, {"filename": "/game/mdlzork_771212/MDL/MADADV.HELP", "start": 394612, "end": 398886}, {"filename": "/game/mdlzork_771212/MDL/MADADV.INFO", "start": 398886, "end": 400413}, {"filename": "/game/mdlzork_771212/MDL/MADADV.SAVE", "start": 400413, "end": 1280080}, {"filename": "/game/mdlzork_771212/MDL/ZORK.LOG", "start": 1280080, "end": 1280231}, {"filename": "/game/mdlzork_771212/README.md", "start": 1280231, "end": 1284319}, {"filename": "/game/mdlzork_771212/SAVEFILE/ZORK.SAVE", "start": 1284319, "end": 2157915}, {"filename": "/game/mdlzork_771212/original_source/README.md", "start": 2157915, "end": 2161389}, {"filename": "/game/mdlzork_771212/original_source/codemeta.json", "start": 2161389, "end": 2162629}, {"filename": "/game/mdlzork_771212/original_source/tree.txt", "start": 2162629, "end": 2163835}, {"filename": "/game/mdlzork_771212/original_source/zork/act2.27", "start": 2163835, "end": 2191727}, {"filename": "/game/mdlzork_771212/original_source/zork/dung.56", "start": 2191727, "end": 2280308}, {"filename": "/game/mdlzork_771212/original_source/zork/lcf/act1.37", "start": 2280308, "end": 2350315}, {"filename": "/game/mdlzork_771212/original_source/zork/lcf/act1.38", "start": 2350315, "end": 2420317}, {"filename": "/game/mdlzork_771212/original_source/zork/lcf/act2z.27", "start": 2420317, "end": 2448910}, {"filename": "/game/mdlzork_771212/original_source/zork/lcf/act3.13", "start": 2448910, "end": 2461666}, {"filename": "/game/mdlzork_771212/original_source/zork/lcf/defs.63", "start": 2461666, "end": 2476321}, {"filename": "/game/mdlzork_771212/original_source/zork/lcf/dungz.56", "start": 2476321, "end": 2567789}, {"filename": "/game/mdlzork_771212/original_source/zork/lcf/makstr.7", "start": 2567789, "end": 2575337}, {"filename": "/game/mdlzork_771212/original_source/zork/lcf/makstr.nbin", "start": 2575337, "end": 2593664}, {"filename": "/game/mdlzork_771212/original_source/zork/lcf/nact2.nbin", "start": 2593664, "end": 2644743}, {"filename": "/game/mdlzork_771212/original_source/zork/lcf/ndefs.nbin", "start": 2644743, "end": 2661521}, {"filename": "/game/mdlzork_771212/original_source/zork/lcf/nnp.nbin", "start": 2661521, "end": 2682183}, {"filename": "/game/mdlzork_771212/original_source/zork/lcf/np.92", "start": 2682183, "end": 2696421}, {"filename": "/game/mdlzork_771212/original_source/zork/lcf/np.93", "start": 2696421, "end": 2710712}, {"filename": "/game/mdlzork_771212/original_source/zork/lcf/nrooms.nbin", "start": 2710712, "end": 2800476}, {"filename": "/game/mdlzork_771212/original_source/zork/lcf/rooms.98", "start": 2800476, "end": 2854318}, {"filename": "/game/mdlzork_771212/original_source/zork/lcf/rooms.99", "start": 2854318, "end": 2908294}, {"filename": "/game/mdlzork_771212/original_source/zork/madman/madadv.help", "start": 2908294, "end": 2912554}, {"filename": "/game/mdlzork_771212/original_source/zork/madman/madadv.save", "start": 2912554, "end": 3509013}, {"filename": "/game/mdlzork_771212/original_source/zork/madman/omadad.save", "start": 3509013, "end": 4085398}, {"filename": "/game/mdlzork_771212/run.mud", "start": 4085398, "end": 4085434}, {"filename": "/game/mdlzork_780124/09tell-repl.mud", "start": 4085434, "end": 4090521}, {"filename": "/game/mdlzork_780124/78act1.mud", "start": 4090521, "end": 4180023}, {"filename": "/game/mdlzork_780124/78act2.mud", "start": 4180023, "end": 4215511}, {"filename": "/game/mdlzork_780124/78act3.mud", "start": 4215511, "end": 4231756}, {"filename": "/game/mdlzork_780124/78defs.mud", "start": 4231756, "end": 4252522}, {"filename": "/game/mdlzork_780124/78dung.mud", "start": 4252522, "end": 4351120}, {"filename": "/game/mdlzork_780124/78loadall.mud", "start": 4351120, "end": 4351539}, {"filename": "/game/mdlzork_780124/78makstr.mud", "start": 4351539, "end": 4364637}, {"filename": "/game/mdlzork_780124/78melee.mud", "start": 4364637, "end": 4391073}, {"filename": "/game/mdlzork_780124/78mrf-patch.mud", "start": 4391073, "end": 4391908}, {"filename": "/game/mdlzork_780124/78mrf.mud", "start": 4391908, "end": 4432321}, {"filename": "/game/mdlzork_780124/78mrr.mud", "start": 4432321, "end": 4443392}, {"filename": "/game/mdlzork_780124/78np.mud", "start": 4443392, "end": 4475473}, {"filename": "/game/mdlzork_780124/78patch.mud", "start": 4475473, "end": 4476324}, {"filename": "/game/mdlzork_780124/78rooms.mud", "start": 4476324, "end": 4552796}, {"filename": "/game/mdlzork_780124/81prim.mud", "start": 4552796, "end": 4557387}, {"filename": "/game/mdlzork_780124/MDL/MADADV.HELP", "start": 4557387, "end": 4562533}, {"filename": "/game/mdlzork_780124/MDL/MADADV.INFO", "start": 4562533, "end": 4564060}, {"filename": "/game/mdlzork_780124/MDL/MADADV.SAVE", "start": 4564060, "end": 5487227}, {"filename": "/game/mdlzork_780124/README.md", "start": 5487227, "end": 5492196}, {"filename": "/game/mdlzork_780124/SAVEFILE/ZORK.SAVE", "start": 5492196, "end": 6414564}, {"filename": "/game/mdlzork_780124/original_source/README.md", "start": 6414564, "end": 6418834}, {"filename": "/game/mdlzork_780124/original_source/codemeta.json", "start": 6418834, "end": 6420090}, {"filename": "/game/mdlzork_780124/original_source/tree.txt", "start": 6420090, "end": 6423336}, {"filename": "/game/mdlzork_780124/original_source/zork/act1.71", "start": 6423336, "end": 6494867}, {"filename": "/game/mdlzork_780124/original_source/zork/act2.37", "start": 6494867, "end": 6522705}, {"filename": "/game/mdlzork_780124/original_source/zork/act3.18", "start": 6522705, "end": 6535991}, {"filename": "/game/mdlzork_780124/original_source/zork/ar1.random/conver.10", "start": 6535991, "end": 6537317}, {"filename": "/game/mdlzork_780124/original_source/zork/ar1.random/dungon.11", "start": 6537317, "end": 6537940}, {"filename": "/game/mdlzork_780124/original_source/zork/ar1.random/dxpray.xtaa12", "start": 6537940, "end": 6548342}, {"filename": "/game/mdlzork_780124/original_source/zork/ar1.random/french.11", "start": 6548342, "end": 6548948}, {"filename": "/game/mdlzork_780124/original_source/zork/ar1.random/fzork.7", "start": 6548948, "end": 6550264}, {"filename": "/game/mdlzork_780124/original_source/zork/ar1.random/gfweep.96", "start": 6550264, "end": 6583037}, {"filename": "/game/mdlzork_780124/original_source/zork/ar1.random/gfweep.97", "start": 6583037, "end": 6615864}, {"filename": "/game/mdlzork_780124/original_source/zork/ar1.random/gunner.94", "start": 6615864, "end": 6646365}, {"filename": "/game/mdlzork_780124/original_source/zork/ar1.random/holida.11", "start": 6646365, "end": 6648159}, {"filename": "/game/mdlzork_780124/original_source/zork/ar1.random/j.1", "start": 6648159, "end": 6649130}, {"filename": "/game/mdlzork_780124/original_source/zork/ar1.random/map.8", "start": 6649130, "end": 6655430}, {"filename": "/game/mdlzork_780124/original_source/zork/ar1.random/mar._ddt_", "start": 6655430, "end": 6655740}, {"filename": "/game/mdlzork_780124/original_source/zork/ar1.random/muddle.12", "start": 6655740, "end": 6659228}, {"filename": "/game/mdlzork_780124/original_source/zork/ar1.random/pi.1", "start": 6659228, "end": 6659519}, {"filename": "/game/mdlzork_780124/original_source/zork/ar1.random/plotso.grid", "start": 6659519, "end": 6659607}, {"filename": "/game/mdlzork_780124/original_source/zork/ar1.random/setsn.1", "start": 6659607, "end": 6660545}, {"filename": "/game/mdlzork_780124/original_source/zork/ar1.random/wdcnt.1", "start": 6660545, "end": 6660609}, {"filename": "/game/mdlzork_780124/original_source/zork/ar1.random/zork.3", "start": 6660609, "end": 6666557}, {"filename": "/game/mdlzork_780124/original_source/zork/dung.129", "start": 6666557, "end": 6755743}, {"filename": "/game/mdlzork_780124/original_source/zork/lcf/act1.nbin", "start": 6755743, "end": 6881129}, {"filename": "/game/mdlzork_780124/original_source/zork/lcf/act1z.71", "start": 6881129, "end": 6954484}, {"filename": "/game/mdlzork_780124/original_source/zork/lcf/act2.nbin", "start": 6954484, "end": 7006745}, {"filename": "/game/mdlzork_780124/original_source/zork/lcf/act2z.37", "start": 7006745, "end": 7035286}, {"filename": "/game/mdlzork_780124/original_source/zork/lcf/act3z.18", "start": 7035286, "end": 7048890}, {"filename": "/game/mdlzork_780124/original_source/zork/lcf/debug.zork", "start": 7048890, "end": 7049065}, {"filename": "/game/mdlzork_780124/original_source/zork/lcf/defs.89", "start": 7049065, "end": 7065726}, {"filename": "/game/mdlzork_780124/original_source/zork/lcf/defs.nbin", "start": 7065726, "end": 7084710}, {"filename": "/game/mdlzork_780124/original_source/zork/lcf/dungz.129", "start": 7084710, "end": 7176781}, {"filename": "/game/mdlzork_780124/original_source/zork/lcf/foo.bar", "start": 7176781, "end": 7176816}, {"filename": "/game/mdlzork_780124/original_source/zork/lcf/load.7", "start": 7176816, "end": 7177283}, {"filename": "/game/mdlzork_780124/original_source/zork/lcf/makstr.25", "start": 7177283, "end": 7187681}, {"filename": "/game/mdlzork_780124/original_source/zork/lcf/makstr.nbin", "start": 7187681, "end": 7210343}, {"filename": "/game/mdlzork_780124/original_source/zork/lcf/melee.105", "start": 7210343, "end": 7231092}, {"filename": "/game/mdlzork_780124/original_source/zork/lcf/melee.nbin", "start": 7231092, "end": 7254500}, {"filename": "/game/mdlzork_780124/original_source/zork/lcf/mrfz.65", "start": 7254500, "end": 7288259}, {"filename": "/game/mdlzork_780124/original_source/zork/lcf/mrrz.56", "start": 7288259, "end": 7298952}, {"filename": "/game/mdlzork_780124/original_source/zork/lcf/np.168", "start": 7298952, "end": 7323310}, {"filename": "/game/mdlzork_780124/original_source/zork/lcf/np.nbin", "start": 7323310, "end": 7353964}, {"filename": "/game/mdlzork_780124/original_source/zork/lcf/rooms.165", "start": 7353964, "end": 7410091}, {"filename": "/game/mdlzork_780124/original_source/zork/lcf/rooms.nbin", "start": 7410091, "end": 7503121}, {"filename": "/game/mdlzork_780124/original_source/zork/lcf/zork.files", "start": 7503121, "end": 7503246}, {"filename": "/game/mdlzork_780124/original_source/zork/madman/madadv.help", "start": 7503246, "end": 7509338}, {"filename": "/game/mdlzork_780124/original_source/zork/madman/madadv.save", "start": 7509338, "end": 8231726}, {"filename": "/game/mdlzork_780124/original_source/zork/madman/madadv.save_0", "start": 8231726, "end": 8839390}, {"filename": "/game/mdlzork_780124/original_source/zork/madman/madadv.save_1", "start": 8839390, "end": 8929995}, {"filename": "/game/mdlzork_780124/original_source/zork/madman/madadv.save_2", "start": 8929995, "end": 9537986}, {"filename": "/game/mdlzork_780124/original_source/zork/madman/madadv.save_3", "start": 9537986, "end": 10145777}, {"filename": "/game/mdlzork_780124/original_source/zork/mrf.65", "start": 10145777, "end": 10178653}, {"filename": "/game/mdlzork_780124/original_source/zork/mrr.56", "start": 10178653, "end": 10189024}, {"filename": "/game/mdlzork_780124/original_source/zork/sys2/ts.zork", "start": 10189024, "end": 10199267}, {"filename": "/game/mdlzork_780124/original_source/zork/sys2/ts.zork_0", "start": 10199267, "end": 10209515}, {"filename": "/game/mdlzork_780124/original_source/zork/taa/ar1.random", "start": 10209515, "end": 10254103}, {"filename": "/game/mdlzork_780124/original_source/zork/taa/ar1.random_0", "start": 10254103, "end": 10328084}, {"filename": "/game/mdlzork_780124/original_source/zork/taa/ar1.random_1", "start": 10328084, "end": 10403392}, {"filename": "/game/mdlzork_780124/original_source/zork/taa/ar1.random_2", "start": 10403392, "end": 10478704}, {"filename": "/game/mdlzork_780124/run.mud", "start": 10478704, "end": 10478742}, {"filename": "/game/mdlzork_791211/MDL/MADADV.DOC", "start": 10478742, "end": 10492112}, {"filename": "/game/mdlzork_791211/MDL/MADADV.HELP", "start": 10492112, "end": 10493109}, {"filename": "/game/mdlzork_791211/MDL/MADADV.INFO", "start": 10493109, "end": 10494909}, {"filename": "/game/mdlzork_791211/MDL/MADADV.SAVE", "start": 10494909, "end": 12009453}, {"filename": "/game/mdlzork_791211/MDL/ZORK.LOG", "start": 12009453, "end": 12009660}, {"filename": "/game/mdlzork_791211/MTRZORK/ZORK.SAVE", "start": 12009660, "end": 13524204}, {"filename": "/game/mdlzork_791211/README.md", "start": 13524204, "end": 13538248}, {"filename": "/game/mdlzork_791211/act1.mud", "start": 13538248, "end": 13622215}, {"filename": "/game/mdlzork_791211/act2.mud", "start": 13622215, "end": 13656158}, {"filename": "/game/mdlzork_791211/act3.mud", "start": 13656158, "end": 13720263}, {"filename": "/game/mdlzork_791211/act4.mud", "start": 13720263, "end": 13767323}, {"filename": "/game/mdlzork_791211/b.mud", "start": 13767323, "end": 13804447}, {"filename": "/game/mdlzork_791211/defs.mud", "start": 13804447, "end": 13826480}, {"filename": "/game/mdlzork_791211/disp1.mud", "start": 13826480, "end": 13830054}, {"filename": "/game/mdlzork_791211/dung.mud", "start": 13830054, "end": 14029091}, {"filename": "/game/mdlzork_791211/impl.mud", "start": 14029091, "end": 14066262}, {"filename": "/game/mdlzork_791211/loadall.mud", "start": 14066262, "end": 14066752}, {"filename": "/game/mdlzork_791211/makstr.mud", "start": 14066752, "end": 14081425}, {"filename": "/game/mdlzork_791211/melee.mud", "start": 14081425, "end": 14097140}, {"filename": "/game/mdlzork_791211/original_source/act1.253", "start": 14097140, "end": 14162537}, {"filename": "/game/mdlzork_791211/original_source/act2.92", "start": 14162537, "end": 14188752}, {"filename": "/game/mdlzork_791211/original_source/act3.198", "start": 14188752, "end": 14238477}, {"filename": "/game/mdlzork_791211/original_source/act4.231", "start": 14238477, "end": 14275431}, {"filename": "/game/mdlzork_791211/original_source/b.176", "start": 14275431, "end": 14300662}, {"filename": "/game/mdlzork_791211/original_source/build.cmd", "start": 14300662, "end": 14304371}, {"filename": "/game/mdlzork_791211/original_source/defs.171", "start": 14304371, "end": 14320575}, {"filename": "/game/mdlzork_791211/original_source/disp1.2", "start": 14320575, "end": 14323545}, {"filename": "/game/mdlzork_791211/original_source/dung.354", "start": 14323545, "end": 14496235}, {"filename": "/game/mdlzork_791211/original_source/impl.123", "start": 14496235, "end": 14522554}, {"filename": "/game/mdlzork_791211/original_source/makstr.44", "start": 14522554, "end": 14533903}, {"filename": "/game/mdlzork_791211/original_source/melee.137", "start": 14533903, "end": 14544883}, {"filename": "/game/mdlzork_791211/original_source/parser.130", "start": 14544883, "end": 14579205}, {"filename": "/game/mdlzork_791211/original_source/points.txt", "start": 14579205, "end": 14581752}, {"filename": "/game/mdlzork_791211/original_source/ppaper.txt", "start": 14581752, "end": 14597854}, {"filename": "/game/mdlzork_791211/original_source/prim.9", "start": 14597854, "end": 14600976}, {"filename": "/game/mdlzork_791211/original_source/rooms.393", "start": 14600976, "end": 14662659}, {"filename": "/game/mdlzork_791211/original_source/sr.54", "start": 14662659, "end": 14675692}, {"filename": "/game/mdlzork_791211/original_source/syntax.7", "start": 14675692, "end": 14678568}, {"filename": "/game/mdlzork_791211/original_source/tape.999", "start": 14678568, "end": 14679884}, {"filename": "/game/mdlzork_791211/original_source/tell.152", "start": 14679884, "end": 14708846}, {"filename": "/game/mdlzork_791211/original_source/typhak.16", "start": 14708846, "end": 14712042}, {"filename": "/game/mdlzork_791211/original_source/util.16", "start": 14712042, "end": 14719469}, {"filename": "/game/mdlzork_791211/parser.mud", "start": 14719469, "end": 14765534}, {"filename": "/game/mdlzork_791211/prim.mud", "start": 14765534, "end": 14770125}, {"filename": "/game/mdlzork_791211/rooms.mud", "start": 14770125, "end": 14857019}, {"filename": "/game/mdlzork_791211/run.mud", "start": 14857019, "end": 14857586}, {"filename": "/game/mdlzork_791211/sr.mud", "start": 14857586, "end": 14874181}, {"filename": "/game/mdlzork_791211/syntax.mud", "start": 14874181, "end": 14878622}, {"filename": "/game/mdlzork_791211/tell-repl.mud", "start": 14878622, "end": 14883722}, {"filename": "/game/mdlzork_791211/typhak.mud", "start": 14883722, "end": 14887643}, {"filename": "/game/mdlzork_791211/util.mud", "start": 14887643, "end": 14896566}, {"filename": "/game/mdlzork_810722/MDL/MADADV.DOC", "start": 14896566, "end": 14909936}, {"filename": "/game/mdlzork_810722/MDL/MADADV.HELP", "start": 14909936, "end": 14910933}, {"filename": "/game/mdlzork_810722/MDL/MADADV.INFO", "start": 14910933, "end": 14912733}, {"filename": "/game/mdlzork_810722/MDL/MADADV.SAVE", "start": 14912733, "end": 16437976}, {"filename": "/game/mdlzork_810722/MDL/ZORK.LOG", "start": 16437976, "end": 16438183}, {"filename": "/game/mdlzork_810722/MTRZORK/ZORK.SAVE", "start": 16438183, "end": 17963426}, {"filename": "/game/mdlzork_810722/README.md", "start": 17963426, "end": 17971351}, {"filename": "/game/mdlzork_810722/act1.mud", "start": 17971351, "end": 18055461}, {"filename": "/game/mdlzork_810722/act2.mud", "start": 18055461, "end": 18089404}, {"filename": "/game/mdlzork_810722/act3.mud", "start": 18089404, "end": 18153610}, {"filename": "/game/mdlzork_810722/act4.mud", "start": 18153610, "end": 18200670}, {"filename": "/game/mdlzork_810722/b.mud", "start": 18200670, "end": 18237794}, {"filename": "/game/mdlzork_810722/defs.mud", "start": 18237794, "end": 18259827}, {"filename": "/game/mdlzork_810722/disp1.mud", "start": 18259827, "end": 18263401}, {"filename": "/game/mdlzork_810722/dung.mud", "start": 18263401, "end": 18462802}, {"filename": "/game/mdlzork_810722/impl.mud", "start": 18462802, "end": 18499973}, {"filename": "/game/mdlzork_810722/loadall.mud", "start": 18499973, "end": 18500463}, {"filename": "/game/mdlzork_810722/makstr.mud", "start": 18500463, "end": 18515136}, {"filename": "/game/mdlzork_810722/melee.mud", "start": 18515136, "end": 18530851}, {"filename": "/game/mdlzork_810722/original_source/act1.254", "start": 18530851, "end": 18596331}, {"filename": "/game/mdlzork_810722/original_source/act2.92", "start": 18596331, "end": 18622546}, {"filename": "/game/mdlzork_810722/original_source/act3.199", "start": 18622546, "end": 18672339}, {"filename": "/game/mdlzork_810722/original_source/act4.231", "start": 18672339, "end": 18709293}, {"filename": "/game/mdlzork_810722/original_source/b.176", "start": 18709293, "end": 18734524}, {"filename": "/game/mdlzork_810722/original_source/defs.171", "start": 18734524, "end": 18750728}, {"filename": "/game/mdlzork_810722/original_source/disp1.2", "start": 18750728, "end": 18753698}, {"filename": "/game/mdlzork_810722/original_source/dung.355", "start": 18753698, "end": 18926751}, {"filename": "/game/mdlzork_810722/original_source/impl.123", "start": 18926751, "end": 18953070}, {"filename": "/game/mdlzork_810722/original_source/makstr.44", "start": 18953070, "end": 18964419}, {"filename": "/game/mdlzork_810722/original_source/melee.137", "start": 18964419, "end": 18975399}, {"filename": "/game/mdlzork_810722/original_source/parser.130", "start": 18975399, "end": 19009721}, {"filename": "/game/mdlzork_810722/original_source/prim.9", "start": 19009721, "end": 19012843}, {"filename": "/game/mdlzork_810722/original_source/rooms.394", "start": 19012843, "end": 19075250}, {"filename": "/game/mdlzork_810722/original_source/sr.54", "start": 19075250, "end": 19088283}, {"filename": "/game/mdlzork_810722/original_source/syntax.7", "start": 19088283, "end": 19091159}, {"filename": "/game/mdlzork_810722/original_source/tell.152", "start": 19091159, "end": 19120121}, {"filename": "/game/mdlzork_810722/original_source/typhak.16", "start": 19120121, "end": 19123317}, {"filename": "/game/mdlzork_810722/original_source/util.16", "start": 19123317, "end": 19130744}, {"filename": "/game/mdlzork_810722/parser.mud", "start": 19130744, "end": 19176809}, {"filename": "/game/mdlzork_810722/prim.mud", "start": 19176809, "end": 19181400}, {"filename": "/game/mdlzork_810722/rooms.mud", "start": 19181400, "end": 19269614}, {"filename": "/game/mdlzork_810722/run.mud", "start": 19269614, "end": 19270181}, {"filename": "/game/mdlzork_810722/sr.mud", "start": 19270181, "end": 19286776}, {"filename": "/game/mdlzork_810722/syntax.mud", "start": 19286776, "end": 19291217}, {"filename": "/game/mdlzork_810722/tell-repl.mud", "start": 19291217, "end": 19296317}, {"filename": "/game/mdlzork_810722/tell.mud", "start": 19296317, "end": 19310138}, {"filename": "/game/mdlzork_810722/typhak.mud", "start": 19310138, "end": 19314059}, {"filename": "/game/mdlzork_810722/util.mud", "start": 19314059, "end": 19322982}], "remote_package_size": 19322982});
 
   })();
 
-// end include: /var/folders/4y/29_p91xj5h1ggml153xr5t8h0000gp/T/tmpz6vkpp34.js
-// include: /var/folders/4y/29_p91xj5h1ggml153xr5t8h0000gp/T/tmp8lr0zns_.js
-
-    // All the pre-js content up to here must remain later on, we need to run
-    // it.
-    if ((typeof ENVIRONMENT_IS_WASM_WORKER != 'undefined' && ENVIRONMENT_IS_WASM_WORKER) || (typeof ENVIRONMENT_IS_PTHREAD != 'undefined' && ENVIRONMENT_IS_PTHREAD) || (typeof ENVIRONMENT_IS_AUDIO_WORKLET != 'undefined' && ENVIRONMENT_IS_AUDIO_WORKLET)) Module['preRun'] = [];
-    var necessaryPreJSTasks = Module['preRun'].slice();
-  // end include: /var/folders/4y/29_p91xj5h1ggml153xr5t8h0000gp/T/tmp8lr0zns_.js
-// include: /var/folders/4y/29_p91xj5h1ggml153xr5t8h0000gp/T/tmp1p5y55dq.js
-
-    if (!Module['preRun']) throw 'Module.preRun should exist because file support used it; did a pre-js delete it?';
-    necessaryPreJSTasks.forEach((task) => {
-      if (Module['preRun'].indexOf(task) < 0) throw 'All preRun tasks that exist before user pre-js code should remain after; did you replace Module or modify Module.preRun?';
-    });
-  // end include: /var/folders/4y/29_p91xj5h1ggml153xr5t8h0000gp/T/tmp1p5y55dq.js
+// end include: /var/folders/dv/lb6sy3v13xbfkd5x2130frlc0000gn/T/tmpb40dqo30.js
 
 
 var arguments_ = [];
@@ -285,8 +229,6 @@ function locateFile(path) {
 var readAsync, readBinary;
 
 if (ENVIRONMENT_IS_NODE) {
-  const isNode = globalThis.process?.versions?.node && globalThis.process?.type != 'renderer';
-  if (!isNode) throw new Error('not compiled for this environment (did you build to HTML and try to run it not on the web, or set ENVIRONMENT to something - like node - and run it someplace else - like on the web?)');
 
   // These modules will usually be used on Node.js. Load them eagerly to avoid
   // the complexity of lazy-loading.
@@ -299,7 +241,6 @@ readBinary = (filename) => {
   // We need to re-wrap `file://` strings to URLs.
   filename = isFileURI(filename) ? new URL(filename) : filename;
   var ret = fs.readFileSync(filename);
-  assert(Buffer.isBuffer(ret));
   return ret;
 };
 
@@ -307,7 +248,6 @@ readAsync = async (filename, binary = true) => {
   // See the comment in the `readBinary` function.
   filename = isFileURI(filename) ? new URL(filename) : filename;
   var ret = fs.readFileSync(filename, binary ? undefined : 'utf8');
-  assert(binary ? Buffer.isBuffer(ret) : typeof ret == 'string');
   return ret;
 };
 // end include: node_shell_read.js
@@ -323,9 +263,6 @@ readAsync = async (filename, binary = true) => {
   };
 
 } else
-if (ENVIRONMENT_IS_SHELL) {
-
-} else
 
 // Note that this includes Node.js workers when relevant (pthreads is enabled).
 // Node.js workers are detected as a combination of ENVIRONMENT_IS_WORKER and
@@ -337,8 +274,6 @@ if (ENVIRONMENT_IS_WEB || ENVIRONMENT_IS_WORKER) {
     // Must be a `blob:` or `data:` URL (e.g. `blob:http://site.com/etc/etc`), we cannot
     // infer anything from them.
   }
-
-  if (!(globalThis.window || globalThis.WorkerGlobalScope)) throw new Error('not compiled for this environment (did you build to HTML and try to run it not on the web, or set ENVIRONMENT to something - like node - and run it someplace else - like on the web?)');
 
   {
 // include: web_or_worker_shell_read.js
@@ -383,26 +318,10 @@ if (ENVIRONMENT_IS_WORKER) {
   }
 } else
 {
-  throw new Error('environment detection error');
 }
 
 var out = console.log.bind(console);
 var err = console.error.bind(console);
-
-var IDBFS = 'IDBFS is no longer included by default; build with -lidbfs.js';
-var PROXYFS = 'PROXYFS is no longer included by default; build with -lproxyfs.js';
-var WORKERFS = 'WORKERFS is no longer included by default; build with -lworkerfs.js';
-var FETCHFS = 'FETCHFS is no longer included by default; build with -lfetchfs.js';
-var ICASEFS = 'ICASEFS is no longer included by default; build with -licasefs.js';
-var JSFILEFS = 'JSFILEFS is no longer included by default; build with -ljsfilefs.js';
-var OPFS = 'OPFS is no longer included by default; build with -lopfs.js';
-
-var NODEFS = 'NODEFS is no longer included by default; build with -lnodefs.js';
-
-// perform assertions in shell.js after we set up out() and err(), as otherwise
-// if an assertion fails it cannot print the message
-
-assert(!ENVIRONMENT_IS_SHELL, 'shell environment detected but not enabled at build time.  Add `shell` to `-sENVIRONMENT` to enable.');
 
 // end include: shell.js
 
@@ -418,10 +337,6 @@ assert(!ENVIRONMENT_IS_SHELL, 'shell environment detected but not enabled at bui
 //    is up at http://kripken.github.io/emscripten-site/docs/api_reference/preamble.js.html
 
 var wasmBinary;
-
-if (!globalThis.WebAssembly) {
-  err('no native wasm support detected');
-}
 
 // Wasm globals
 
@@ -445,18 +360,11 @@ var EXITSTATUS;
 /** @type {function(*, string=)} */
 function assert(condition, text) {
   if (!condition) {
-    abort('Assertion failed' + (text ? ': ' + text : ''));
+    // This build was created without ASSERTIONS defined.  `assert()` should not
+    // ever be called in this configuration but in case there are callers in
+    // the wild leave this simple abort() implementation here for now.
+    abort(text);
   }
-}
-
-// We used to include malloc/free by default in the past. Show a helpful error in
-// builds with assertions.
-function _malloc() {
-  abort('malloc() called but not included in the build - add `_malloc` to EXPORTED_FUNCTIONS');
-}
-function _free() {
-  // Show a helpful error since we used to include free by default in the past.
-  abort('free() called but not included in the build - add `_free` to EXPORTED_FUNCTIONS');
 }
 
 /**
@@ -467,123 +375,10 @@ var isFileURI = (filename) => filename.startsWith('file://');
 
 // include: runtime_common.js
 // include: runtime_stack_check.js
-// Initializes the stack cookie. Called at the startup of main and at the startup of each thread in pthreads mode.
-function writeStackCookie() {
-  var max = _emscripten_stack_get_end();
-  assert((max & 3) == 0);
-  // If the stack ends at address zero we write our cookies 4 bytes into the
-  // stack.  This prevents interference with SAFE_HEAP and ASAN which also
-  // monitor writes to address zero.
-  if (max == 0) {
-    max += 4;
-  }
-  // The stack grow downwards towards _emscripten_stack_get_end.
-  // We write cookies to the final two words in the stack and detect if they are
-  // ever overwritten.
-  HEAPU32[((max)>>2)] = 0x02135467;
-  HEAPU32[(((max)+(4))>>2)] = 0x89BACDFE;
-  // Also test the global address 0 for integrity.
-  HEAPU32[((0)>>2)] = 1668509029;
-}
-
-function checkStackCookie() {
-  if (ABORT) return;
-  var max = _emscripten_stack_get_end();
-  // See writeStackCookie().
-  if (max == 0) {
-    max += 4;
-  }
-  var cookie1 = HEAPU32[((max)>>2)];
-  var cookie2 = HEAPU32[(((max)+(4))>>2)];
-  if (cookie1 != 0x02135467 || cookie2 != 0x89BACDFE) {
-    abort(`Stack overflow! Stack cookie has been overwritten at ${ptrToString(max)}, expected hex dwords 0x89BACDFE and 0x2135467, but received ${ptrToString(cookie2)} ${ptrToString(cookie1)}`);
-  }
-  // Also test the global address 0 for integrity.
-  if (HEAPU32[((0)>>2)] != 0x63736d65 /* 'emsc' */) {
-    abort('Runtime error: The application has corrupted its heap memory area (address zero)!');
-  }
-}
 // end include: runtime_stack_check.js
 // include: runtime_exceptions.js
 // end include: runtime_exceptions.js
 // include: runtime_debug.js
-var runtimeDebug = true; // Switch to false at runtime to disable logging at the right times
-
-// Used by XXXXX_DEBUG settings to output debug messages.
-function dbg(...args) {
-  if (!runtimeDebug && typeof runtimeDebug != 'undefined') return;
-  // TODO(sbc): Make this configurable somehow.  Its not always convenient for
-  // logging to show up as warnings.
-  console.warn(...args);
-}
-
-// Endianness check
-(() => {
-  var h16 = new Int16Array(1);
-  var h8 = new Int8Array(h16.buffer);
-  h16[0] = 0x6373;
-  if (h8[0] !== 0x73 || h8[1] !== 0x63) abort('Runtime error: expected the system to be little-endian! (Run with -sSUPPORT_BIG_ENDIAN to bypass)');
-})();
-
-function consumedModuleProp(prop) {
-  if (!Object.getOwnPropertyDescriptor(Module, prop)) {
-    Object.defineProperty(Module, prop, {
-      configurable: true,
-      set() {
-        abort(`Attempt to set \`Module.${prop}\` after it has already been processed.  This can happen, for example, when code is injected via '--post-js' rather than '--pre-js'`);
-
-      }
-    });
-  }
-}
-
-function makeInvalidEarlyAccess(name) {
-  return () => assert(false, `call to '${name}' via reference taken before Wasm module initialization`);
-
-}
-
-function ignoredModuleProp(prop) {
-  if (Object.getOwnPropertyDescriptor(Module, prop)) {
-    abort(`\`Module.${prop}\` was supplied but \`${prop}\` not included in INCOMING_MODULE_JS_API`);
-  }
-}
-
-// forcing the filesystem exports a few things by default
-function isExportedByForceFilesystem(name) {
-  return name === 'FS_createPath' ||
-         name === 'FS_createDataFile' ||
-         name === 'FS_createPreloadedFile' ||
-         name === 'FS_preloadFile' ||
-         name === 'FS_unlink' ||
-         name === 'addRunDependency' ||
-         // The old FS has some functionality that WasmFS lacks.
-         name === 'FS_createLazyFile' ||
-         name === 'FS_createDevice' ||
-         name === 'removeRunDependency';
-}
-
-function missingLibrarySymbol(sym) {
-
-  // Any symbol that is not included from the JS library is also (by definition)
-  // not exported on the Module object.
-  unexportedRuntimeSymbol(sym);
-}
-
-function unexportedRuntimeSymbol(sym) {
-  if (!Object.getOwnPropertyDescriptor(Module, sym)) {
-    Object.defineProperty(Module, sym, {
-      configurable: true,
-      get() {
-        var msg = `'${sym}' was not exported. add it to EXPORTED_RUNTIME_METHODS (see the Emscripten FAQ)`;
-        if (isExportedByForceFilesystem(sym)) {
-          msg += '. Alternatively, forcing filesystem support (-sFORCE_FILESYSTEM) can export this for you';
-        }
-        abort(msg);
-      },
-    });
-  }
-}
-
 // end include: runtime_debug.js
 var readyPromiseResolve, readyPromiseReject;
 
@@ -635,9 +430,6 @@ function updateMemoryViews() {
 // include: memoryprofiler.js
 // end include: memoryprofiler.js
 // end include: runtime_common.js
-assert(globalThis.Int32Array && globalThis.Float64Array && Int32Array.prototype.subarray && Int32Array.prototype.set,
-       'JS engine does not provide full typed array support');
-
 function preRun() {
   if (Module['preRun']) {
     if (typeof Module['preRun'] == 'function') Module['preRun'] = [Module['preRun']];
@@ -645,17 +437,13 @@ function preRun() {
       addOnPreRun(Module['preRun'].shift());
     }
   }
-  consumedModuleProp('preRun');
   // Begin ATPRERUNS hooks
   callRuntimeCallbacks(onPreRuns);
   // End ATPRERUNS hooks
 }
 
 function initRuntime() {
-  assert(!runtimeInitialized);
   runtimeInitialized = true;
-
-  checkStackCookie();
 
   // Begin ATINITS hooks
   if (!Module['noFSInit'] && !FS.initialized) FS.init();
@@ -669,13 +457,7 @@ TTY.init();
   // End ATPOSTCTORS hooks
 }
 
-function preMain() {
-  checkStackCookie();
-  // No ATMAINS hooks
-}
-
 function postRun() {
-  checkStackCookie();
    // PThreads reuse the runtime from the main thread.
 
   if (Module['postRun']) {
@@ -684,7 +466,6 @@ function postRun() {
       addOnPostRun(Module['postRun'].shift());
     }
   }
-  consumedModuleProp('postRun');
 
   // Begin ATPOSTRUNS hooks
   callRuntimeCallbacks(onPostRuns);
@@ -701,6 +482,8 @@ function abort(what) {
   err(what);
 
   ABORT = true;
+
+  what += '. Build with -sASSERTIONS for more info.';
 
   // Use a wasm runtime error, because a JS error might be seen as a foreign
   // exception, which means we'd run destructors on it. We need the error to
@@ -723,17 +506,6 @@ function abort(what) {
   // in code paths apart from instantiation where an exception is expected
   // to be thrown when abort is called.
   throw e;
-}
-
-function createExportWrapper(name, nargs) {
-  return (...args) => {
-    assert(runtimeInitialized, `native function \`${name}\` called before runtime initialization`);
-    var f = wasmExports[name];
-    assert(f, `exported native function \`${name}\` not found`);
-    // Only assert for too many arguments. Too few can be valid since the missing arguments will be zero filled.
-    assert(args.length <= nargs, `native function \`${name}\` called with ${args.length} args but expects ${nargs}`);
-    return f(...args);
-  };
 }
 
 var wasmBinaryFile;
@@ -778,10 +550,6 @@ async function instantiateArrayBuffer(binaryFile, imports) {
   } catch (reason) {
     err(`failed to asynchronously prepare wasm: ${reason}`);
 
-    // Warn on some common problems.
-    if (isFileURI(binaryFile)) {
-      err(`warning: Loading from a file URI (${binaryFile}) is not supported in most browsers. See https://emscripten.org/docs/getting_started/FAQ.html#how-do-i-run-a-local-webserver-for-testing-why-does-my-program-stall-in-downloading-or-preparing`);
-    }
     abort(reason);
   }
 }
@@ -840,15 +608,9 @@ async function createWasm() {
   }
 
   // Prefer streaming instantiation if available.
-  // Async compilation can be confusing when an error on the page overwrites Module
-  // (for example, if the order of elements is wrong, and the one defining Module is
-  // later), so we save Module and check it later.
-  var trueModule = Module;
   function receiveInstantiationResult(result) {
     // 'result' is a ResultObject object which has both the module and instance.
     // receiveInstance() will swap in the exports (to Module.asm) so they can be called
-    assert(Module === trueModule, 'the Module object should not be replaced during async compilation - perhaps the order of HTML elements is wrong?');
-    trueModule = null;
     // TODO: Due to Closure regression https://github.com/google/closure-compiler/issues/3193, the above line no longer optimizes out down to the following line.
     // When the regression is fixed, can restore the above PTHREADS-enabled path.
     return receiveInstance(result['instance']);
@@ -864,14 +626,9 @@ async function createWasm() {
   // path.
   if (Module['instantiateWasm']) {
     return new Promise((resolve, reject) => {
-      try {
         Module['instantiateWasm'](info, (inst, mod) => {
           resolve(receiveInstance(inst, mod));
         });
-      } catch(e) {
-        err(`Module.instantiateWasm callback failed with error: ${e}`);
-        reject(e);
-      }
     });
   }
 
@@ -929,13 +686,6 @@ async function createWasm() {
 
   var noExitRuntime = true;
 
-  var ptrToString = (ptr) => {
-      assert(typeof ptr === 'number', `ptrToString expects a number, got ${typeof ptr}`);
-      // Convert to 32-bit unsigned value
-      ptr >>>= 0;
-      return '0x' + ptr.toString(16).padStart(8, '0');
-    };
-
   
     /**
      * @param {number} ptr
@@ -961,15 +711,6 @@ async function createWasm() {
 
   var stackSave = () => _emscripten_stack_get_current();
 
-  var warnOnce = (text) => {
-      warnOnce.shown ||= {};
-      if (!warnOnce.shown[text]) {
-        warnOnce.shown[text] = 1;
-        if (ENVIRONMENT_IS_NODE) text = 'warning: ' + text;
-        err(text);
-      }
-    };
-
   
 
   var UTF8Decoder = globalThis.TextDecoder && new TextDecoder();
@@ -984,7 +725,6 @@ async function createWasm() {
       while (heapOrArray[idx] && !(idx >= maxIdx)) ++idx;
       return idx;
     };
-  
   
     /**
      * Given a pointer 'idx' to a null-terminated UTF8-encoded string in the given
@@ -1018,7 +758,6 @@ async function createWasm() {
         if ((u0 & 0xF0) == 0xE0) {
           u0 = ((u0 & 15) << 12) | (u1 << 6) | u2;
         } else {
-          if ((u0 & 0xF8) != 0xF0) warnOnce('Invalid UTF-8 leading byte ' + ptrToString(u0) + ' encountered when deserializing a UTF-8 string in wasm memory to a JS string!');
           u0 = ((u0 & 7) << 18) | (u1 << 12) | (u2 << 6) | (heapOrArray[idx++] & 63);
         }
   
@@ -1046,7 +785,6 @@ async function createWasm() {
      * @return {string}
      */
   var UTF8ToString = (ptr, maxBytesToRead, ignoreNul) => {
-      assert(typeof ptr == 'number', `UTF8ToString expects a number (got ${typeof ptr})`);
       return ptr ? UTF8ArrayToString(HEAPU8, ptr, maxBytesToRead, ignoreNul) : '';
     };
   var ___assert_fail = (condition, filename, line, func) =>
@@ -1118,11 +856,10 @@ async function createWasm() {
       info.init(type, destructor);
       exceptionLast = ptr;
       uncaughtExceptionCount++;
-      assert(false, 'Exception thrown, but exception catching is not enabled. Compile with -sNO_DISABLE_EXCEPTION_CATCHING or -sEXCEPTION_CATCHING_ALLOWED=[..] to catch.');
+      throw exceptionLast;
     };
 
   var syscallGetVarargI = () => {
-      assert(SYSCALLS.varargs != undefined);
       // the `+` prepended here is necessary to convince the JSCompiler that varargs is indeed a number.
       var ret = HEAP32[((+SYSCALLS.varargs)>>2)];
       SYSCALLS.varargs += 4;
@@ -1288,7 +1025,6 @@ async function createWasm() {
     };
   
   var stringToUTF8Array = (str, heap, outIdx, maxBytesToWrite) => {
-      assert(typeof str === 'string', `stringToUTF8Array expects a string (got ${typeof str})`);
       // Parameter maxBytesToWrite is not optional. Negative values, 0, null,
       // undefined and false each don't write out any bytes.
       if (!(maxBytesToWrite > 0))
@@ -1315,7 +1051,6 @@ async function createWasm() {
           heap[outIdx++] = 0x80 | (u & 63);
         } else {
           if (outIdx + 3 >= endIdx) break;
-          if (u > 0x10FFFF) warnOnce('Invalid Unicode code point ' + ptrToString(u) + ' encountered when serializing a JS string to a UTF-8 string in wasm memory! (Valid unicode code points should be in range 0-0x10FFFF).');
           heap[outIdx++] = 0xF0 | (u >> 18);
           heap[outIdx++] = 0x80 | ((u >> 12) & 63);
           heap[outIdx++] = 0x80 | ((u >> 6) & 63);
@@ -1528,7 +1263,7 @@ async function createWasm() {
   
   
   var mmapAlloc = (size) => {
-      abort('internal error: mmapAlloc called but `emscripten_builtin_memalign` native symbol not exported');
+      abort();
     };
   var MEMFS = {
   ops_table:null,
@@ -1686,7 +1421,14 @@ async function createWasm() {
           }
         },
   lookup(parent, name) {
-          throw new FS.ErrnoError(44);
+          // This error may happen quite a bit. To avoid overhead we reuse it (and
+          // suffer a lack of stack info).
+          if (!MEMFS.doesNotExistError) {
+            MEMFS.doesNotExistError = new FS.ErrnoError(44);
+            /** @suppress {checkTypes} */
+            MEMFS.doesNotExistError.stack = '<generic error, no stack>';
+          }
+          throw MEMFS.doesNotExistError;
         },
   mknod(parent, name, mode, dev) {
           return MEMFS.createNode(parent, name, mode, dev);
@@ -1743,7 +1485,6 @@ async function createWasm() {
           var contents = stream.node.contents;
           if (position >= stream.node.usedBytes) return 0;
           var size = Math.min(stream.node.usedBytes - position, length);
-          assert(size >= 0);
           if (size > 8 && contents.subarray) { // non-trivial, and typed array
             buffer.set(contents.subarray(position, position + size), offset);
           } else {
@@ -1752,8 +1493,6 @@ async function createWasm() {
           return size;
         },
   write(stream, buffer, offset, length, position, canOwn) {
-          // The data buffer should be a typed array view
-          assert(!(buffer instanceof ArrayBuffer));
           // If the buffer is located in main memory (HEAP), and if
           // memory can grow, we can't hold on to references of the
           // memory buffer, as they may get invalidated. That means we
@@ -1768,7 +1507,6 @@ async function createWasm() {
   
           if (buffer.subarray && (!node.contents || node.contents.subarray)) { // This write is from a typed array to a typed array?
             if (canOwn) {
-              assert(position === 0, 'canOwn must imply no weird position inside the file');
               node.contents = buffer.subarray(offset, offset + length);
               node.usedBytes = length;
               return length;
@@ -1874,137 +1612,8 @@ async function createWasm() {
     };
   
   
-  
-  
-  var strError = (errno) => UTF8ToString(_strerror(errno));
-  
-  var ERRNO_CODES = {
-      'EPERM': 63,
-      'ENOENT': 44,
-      'ESRCH': 71,
-      'EINTR': 27,
-      'EIO': 29,
-      'ENXIO': 60,
-      'E2BIG': 1,
-      'ENOEXEC': 45,
-      'EBADF': 8,
-      'ECHILD': 12,
-      'EAGAIN': 6,
-      'EWOULDBLOCK': 6,
-      'ENOMEM': 48,
-      'EACCES': 2,
-      'EFAULT': 21,
-      'ENOTBLK': 105,
-      'EBUSY': 10,
-      'EEXIST': 20,
-      'EXDEV': 75,
-      'ENODEV': 43,
-      'ENOTDIR': 54,
-      'EISDIR': 31,
-      'EINVAL': 28,
-      'ENFILE': 41,
-      'EMFILE': 33,
-      'ENOTTY': 59,
-      'ETXTBSY': 74,
-      'EFBIG': 22,
-      'ENOSPC': 51,
-      'ESPIPE': 70,
-      'EROFS': 69,
-      'EMLINK': 34,
-      'EPIPE': 64,
-      'EDOM': 18,
-      'ERANGE': 68,
-      'ENOMSG': 49,
-      'EIDRM': 24,
-      'ECHRNG': 106,
-      'EL2NSYNC': 156,
-      'EL3HLT': 107,
-      'EL3RST': 108,
-      'ELNRNG': 109,
-      'EUNATCH': 110,
-      'ENOCSI': 111,
-      'EL2HLT': 112,
-      'EDEADLK': 16,
-      'ENOLCK': 46,
-      'EBADE': 113,
-      'EBADR': 114,
-      'EXFULL': 115,
-      'ENOANO': 104,
-      'EBADRQC': 103,
-      'EBADSLT': 102,
-      'EDEADLOCK': 16,
-      'EBFONT': 101,
-      'ENOSTR': 100,
-      'ENODATA': 116,
-      'ETIME': 117,
-      'ENOSR': 118,
-      'ENONET': 119,
-      'ENOPKG': 120,
-      'EREMOTE': 121,
-      'ENOLINK': 47,
-      'EADV': 122,
-      'ESRMNT': 123,
-      'ECOMM': 124,
-      'EPROTO': 65,
-      'EMULTIHOP': 36,
-      'EDOTDOT': 125,
-      'EBADMSG': 9,
-      'ENOTUNIQ': 126,
-      'EBADFD': 127,
-      'EREMCHG': 128,
-      'ELIBACC': 129,
-      'ELIBBAD': 130,
-      'ELIBSCN': 131,
-      'ELIBMAX': 132,
-      'ELIBEXEC': 133,
-      'ENOSYS': 52,
-      'ENOTEMPTY': 55,
-      'ENAMETOOLONG': 37,
-      'ELOOP': 32,
-      'EOPNOTSUPP': 138,
-      'EPFNOSUPPORT': 139,
-      'ECONNRESET': 15,
-      'ENOBUFS': 42,
-      'EAFNOSUPPORT': 5,
-      'EPROTOTYPE': 67,
-      'ENOTSOCK': 57,
-      'ENOPROTOOPT': 50,
-      'ESHUTDOWN': 140,
-      'ECONNREFUSED': 14,
-      'EADDRINUSE': 3,
-      'ECONNABORTED': 13,
-      'ENETUNREACH': 40,
-      'ENETDOWN': 38,
-      'ETIMEDOUT': 73,
-      'EHOSTDOWN': 142,
-      'EHOSTUNREACH': 23,
-      'EINPROGRESS': 26,
-      'EALREADY': 7,
-      'EDESTADDRREQ': 17,
-      'EMSGSIZE': 35,
-      'EPROTONOSUPPORT': 66,
-      'ESOCKTNOSUPPORT': 137,
-      'EADDRNOTAVAIL': 4,
-      'ENETRESET': 39,
-      'EISCONN': 30,
-      'ENOTCONN': 53,
-      'ETOOMANYREFS': 141,
-      'EUSERS': 136,
-      'EDQUOT': 19,
-      'ESTALE': 72,
-      'ENOTSUP': 138,
-      'ENOMEDIUM': 148,
-      'EILSEQ': 25,
-      'EOVERFLOW': 61,
-      'ECANCELED': 11,
-      'ENOTRECOVERABLE': 56,
-      'EOWNERDEAD': 62,
-      'ESTRPIPE': 135,
-    };
-  
   var asyncLoad = async (url) => {
       var arrayBuffer = await readAsync(url);
-      assert(arrayBuffer, `Loading data file "${url}" failed (no arrayBuffer).`);
       return new Uint8Array(arrayBuffer);
     };
   
@@ -2012,35 +1621,19 @@ async function createWasm() {
   var FS_createDataFile = (...args) => FS.createDataFile(...args);
   
   var getUniqueRunDependency = (id) => {
-      var orig = id;
-      while (1) {
-        if (!runDependencyTracking[id]) return id;
-        id = orig + Math.random();
-      }
+      return id;
     };
   
   var runDependencies = 0;
   
   
   var dependenciesFulfilled = null;
-  
-  var runDependencyTracking = {
-  };
-  
-  var runDependencyWatcher = null;
   var removeRunDependency = (id) => {
       runDependencies--;
   
       Module['monitorRunDependencies']?.(runDependencies);
   
-      assert(id, 'removeRunDependency requires an ID');
-      assert(runDependencyTracking[id]);
-      delete runDependencyTracking[id];
       if (runDependencies == 0) {
-        if (runDependencyWatcher !== null) {
-          clearInterval(runDependencyWatcher);
-          runDependencyWatcher = null;
-        }
         if (dependenciesFulfilled) {
           var callback = dependenciesFulfilled;
           dependenciesFulfilled = null;
@@ -2048,40 +1641,11 @@ async function createWasm() {
         }
       }
     };
-  
-  
   var addRunDependency = (id) => {
       runDependencies++;
   
       Module['monitorRunDependencies']?.(runDependencies);
   
-      assert(id, 'addRunDependency requires an ID')
-      assert(!runDependencyTracking[id]);
-      runDependencyTracking[id] = 1;
-      if (runDependencyWatcher === null && globalThis.setInterval) {
-        // Check for missing dependencies every few seconds
-        runDependencyWatcher = setInterval(() => {
-          if (ABORT) {
-            clearInterval(runDependencyWatcher);
-            runDependencyWatcher = null;
-            return;
-          }
-          var shown = false;
-          for (var dep in runDependencyTracking) {
-            if (!shown) {
-              shown = true;
-              err('still waiting on run dependencies:');
-            }
-            err(`dependency: ${dep}`);
-          }
-          if (shown) {
-            err('(end of list)');
-          }
-        }, 10000);
-        // Prevent this timer from keeping the runtime alive if nothing
-        // else is.
-        runDependencyWatcher.unref?.()
-      }
     };
   
   
@@ -2092,7 +1656,6 @@ async function createWasm() {
   
       for (var plugin of preloadPlugins) {
         if (plugin['canHandle'](fullname)) {
-          assert(plugin['handle'].constructor.name === 'AsyncFunction', 'Filesystem plugin handlers must be async functions (See #24914)')
           return plugin['handle'](byteArray, fullname);
         }
       }
@@ -2140,7 +1703,7 @@ async function createWasm() {
   syncFSRequests:0,
   readFiles:{
   },
-  ErrnoError:class extends Error {
+  ErrnoError:class {
         name = 'ErrnoError';
         // We set the `name` property to be able to identify `FS.ErrnoError`
         // - the `name` is a standard ECMA-262 property of error objects. Kind of good to have it anyway.
@@ -2149,14 +1712,7 @@ async function createWasm() {
         // the test `err instanceof FS.ErrnoError` won't detect an error coming from another filesystem, causing bugs.
         // we'll use the reliable test `err.name == "ErrnoError"` instead
         constructor(errno) {
-          super(runtimeInitialized ? strError(errno) : '');
           this.errno = errno;
-          for (var key in ERRNO_CODES) {
-            if (ERRNO_CODES[key] === errno) {
-              this.code = key;
-              break;
-            }
-          }
         }
       },
   FSStream:class {
@@ -2362,7 +1918,6 @@ async function createWasm() {
         return FS.lookup(parent, name);
       },
   createNode(parent, name, mode, rdev) {
-        assert(typeof parent == 'object')
         var node = new FS.FSNode(parent, name, mode, rdev);
   
         FS.hashAddNode(node);
@@ -2501,7 +2056,6 @@ async function createWasm() {
       },
   getStream:(fd) => FS.streams[fd],
   createStream(stream, fd = -1) {
-        assert(fd >= -1);
   
         // clone it, so we can return an instance of FSStream
         stream = Object.assign(new FS.FSStream(), stream);
@@ -2576,7 +2130,6 @@ async function createWasm() {
         var completed = 0;
   
         function doCallback(errCode) {
-          assert(FS.syncFSRequests > 0);
           FS.syncFSRequests--;
           return callback(errCode);
         }
@@ -2604,11 +2157,6 @@ async function createWasm() {
         }
       },
   mount(type, opts, mountpoint) {
-        if (typeof type == 'string') {
-          // The filesystem was not included, and instead we have an error
-          // message stored in the variable.
-          throw type;
-        }
         var root = mountpoint === '/';
         var pseudo = !mountpoint;
         var node;
@@ -2685,7 +2233,6 @@ async function createWasm() {
   
         // remove this mount from the child mounts
         var idx = node.mount.mounts.indexOf(mount);
-        assert(idx !== -1);
         node.mount.mounts.splice(idx, 1);
       },
   lookup(parent, name) {
@@ -3179,7 +2726,6 @@ async function createWasm() {
         return stream.position;
       },
   read(stream, buffer, offset, length, position) {
-        assert(offset >= 0);
         if (length < 0 || position < 0) {
           throw new FS.ErrnoError(28);
         }
@@ -3206,7 +2752,6 @@ async function createWasm() {
         return bytesRead;
       },
   write(stream, buffer, offset, length, position, canOwn) {
-        assert(offset >= 0);
         if (length < 0 || position < 0) {
           throw new FS.ErrnoError(28);
         }
@@ -3260,7 +2805,6 @@ async function createWasm() {
         return stream.stream_ops.mmap(stream, length, position, prot, flags);
       },
   msync(stream, buffer, offset, length, mmapFlags) {
-        assert(offset >= 0);
         if (!stream.stream_ops.msync) {
           return 0;
         }
@@ -3420,9 +2964,6 @@ async function createWasm() {
         var stdin = FS.open('/dev/stdin', 0);
         var stdout = FS.open('/dev/stdout', 1);
         var stderr = FS.open('/dev/stderr', 1);
-        assert(stdin.fd === 0, `invalid handle for stdin (${stdin.fd})`);
-        assert(stdout.fd === 1, `invalid handle for stdout (${stdout.fd})`);
-        assert(stderr.fd === 2, `invalid handle for stderr (${stderr.fd})`);
       },
   staticInit() {
         FS.nameTable = new Array(4096);
@@ -3438,7 +2979,6 @@ async function createWasm() {
         };
       },
   init(input, output, error) {
-        assert(!FS.initialized, 'FS.init was previously called. If you want to initialize later with custom parameters, remove any earlier calls (note that one is automatically added to the generated code)');
         FS.initialized = true;
   
         // Allow Module.stdin etc. to provide defaults, if none explicitly passed to us here
@@ -3451,7 +2991,6 @@ async function createWasm() {
   quit() {
         FS.initialized = false;
         // force-flush all streams, so we get musl std streams printed out
-        _fflush(0);
         // close all of our streams
         for (var stream of FS.streams) {
           if (stream) {
@@ -3733,7 +3272,6 @@ async function createWasm() {
           if (position >= contents.length)
             return 0;
           var size = Math.min(contents.length - position, length);
-          assert(size >= 0);
           if (contents.slice) { // normal array
             for (var i = 0; i < size; i++) {
               buffer[offset + i] = contents[position + i];
@@ -3762,24 +3300,6 @@ async function createWasm() {
         };
         node.stream_ops = stream_ops;
         return node;
-      },
-  absolutePath() {
-        abort('FS.absolutePath has been removed; use PATH_FS.resolve instead');
-      },
-  createFolder() {
-        abort('FS.createFolder has been removed; use FS.mkdir instead');
-      },
-  createLink() {
-        abort('FS.createLink has been removed; use FS.symlink instead');
-      },
-  joinPath() {
-        abort('FS.joinPath has been removed; use PATH.join instead');
-      },
-  mmapAlloc() {
-        abort('FS.mmapAlloc has been replaced by the top level function mmapAlloc');
-      },
-  standardizePath() {
-        abort('FS.standardizePath has been removed; use PATH.normalize instead');
       },
   };
   
@@ -3922,7 +3442,6 @@ async function createWasm() {
 
   
   var stringToUTF8 = (str, outPtr, maxBytesToWrite) => {
-      assert(typeof maxBytesToWrite == 'number', 'stringToUTF8(str, outPtr, maxBytesToWrite) is missing the third parameter that specifies the length of the output buffer!');
       return stringToUTF8Array(str, HEAPU8, outPtr, maxBytesToWrite);
     };
   function ___syscall_getcwd(buf, size) {
@@ -4055,7 +3574,6 @@ async function createWasm() {
       var nofollow = flags & 256;
       var allowEmpty = flags & 4096;
       flags = flags & (~6400);
-      assert(!flags, `unknown flags in __syscall_newfstatat: ${flags}`);
       path = SYSCALLS.calculateAt(dirfd, path, allowEmpty);
       return SYSCALLS.writeStat(buf, nofollow ? FS.lstat(path) : FS.stat(path));
     } catch (e) {
@@ -4091,7 +3609,7 @@ async function createWasm() {
   }
 
   var __abort_js = () =>
-      abort('native code called abort()');
+      abort('');
 
   var __emscripten_throw_longjmp = () => {
       throw Infinity;
@@ -4158,7 +3676,6 @@ async function createWasm() {
     ;
   }
 
-  
   var __tzset_js = (timezone, daylight, std_name, dst_name) => {
       // TODO: Use (malleable) environment variables instead of system settings.
       var currentYear = new Date().getFullYear();
@@ -4198,10 +3715,6 @@ async function createWasm() {
   
       var winterName = extractZone(winterOffset);
       var summerName = extractZone(summerOffset);
-      assert(winterName);
-      assert(summerName);
-      assert(lengthBytesUTF8(winterName) <= 16, `timezone name truncated to fit in TZNAME_MAX (${winterName})`);
-      assert(lengthBytesUTF8(summerName) <= 16, `timezone name truncated to fit in TZNAME_MAX (${summerName})`);
       if (summerOffset < winterOffset) {
         // Northern hemisphere
         stringToUTF8(winterName, std_name, 17);
@@ -4243,8 +3756,38 @@ async function createWasm() {
     ;
   }
 
+  var readEmAsmArgsArray = [];
+  var readEmAsmArgs = (sigPtr, buf) => {
+      readEmAsmArgsArray.length = 0;
+      var ch;
+      // Most arguments are i32s, so shift the buffer pointer so it is a plain
+      // index into HEAP32.
+      while (ch = HEAPU8[sigPtr++]) {
+        // Floats are always passed as doubles, so all types except for 'i'
+        // are 8 bytes and require alignment.
+        var wide = (ch != 105);
+        wide &= (ch != 112);
+        buf += wide && (buf % 8) ? 4 : 0;
+        readEmAsmArgsArray.push(
+          // Special case for pointers under wasm64 or CAN_ADDRESS_2GB mode.
+          ch == 112 ? HEAPU32[((buf)>>2)] :
+          ch == 106 ? HEAP64[((buf)>>3)] :
+          ch == 105 ?
+            HEAP32[((buf)>>2)] :
+            HEAPF64[((buf)>>3)]
+        );
+        buf += wide ? 8 : 4;
+      }
+      return readEmAsmArgsArray;
+    };
+  var runEmAsmFunction = (code, sigPtr, argbuf) => {
+      var args = readEmAsmArgs(sigPtr, argbuf);
+      return ASM_CONSTS[code](...args);
+    };
+  var _emscripten_asm_const_int = (code, sigPtr, argbuf) => {
+      return runEmAsmFunction(code, sigPtr, argbuf);
+    };
 
-  var _emscripten_err = (str) => err(UTF8ToString(str));
 
 
   var getHeapMax = () =>
@@ -4255,7 +3798,6 @@ async function createWasm() {
       268435456;
   
   var alignMemory = (size, alignment) => {
-      assert(alignment, "alignment argument is required");
       return Math.ceil(size / alignment) * alignment;
     };
   
@@ -4268,7 +3810,6 @@ async function createWasm() {
         updateMemoryViews();
         return 1 /*success*/;
       } catch(e) {
-        err(`growMemory: Attempted to grow heap from ${oldHeapSize} bytes to ${size} bytes, but got error: ${e}`);
       }
       // implicit 0 return to save code size (caller will cast "undefined" into 0
       // anyhow)
@@ -4279,7 +3820,6 @@ async function createWasm() {
       requestedSize >>>= 0;
       // With multithreaded builds, races can happen (another thread might increase the size
       // in between), so return a failure, and let the caller retry.
-      assert(requestedSize > oldSize);
   
       // Memory resize rules:
       // 1.  Always increase heap size to at least the requested size, rounded up
@@ -4302,7 +3842,6 @@ async function createWasm() {
       // (the wasm binary specifies it, so if we tried, we'd fail anyhow).
       var maxHeapSize = getHeapMax();
       if (requestedSize > maxHeapSize) {
-        err(`Cannot enlarge memory, requested ${requestedSize} bytes, but the limit is ${maxHeapSize} bytes!`);
         return false;
       }
   
@@ -4322,7 +3861,6 @@ async function createWasm() {
           return true;
         }
       }
-      err(`Failed to grow the heap from ${oldSize} bytes to ${newSize} bytes, not enough memory!`);
       return false;
     };
 
@@ -4337,20 +3875,9 @@ async function createWasm() {
       }
       quit_(code, new ExitStatus(code));
     };
-  
-  
   /** @param {boolean|number=} implicit */
   var exitJS = (status, implicit) => {
       EXITSTATUS = status;
-  
-      checkUnflushedContent();
-  
-      // if exit() was called explicitly, warn the user if the runtime isn't actually being shut down
-      if (keepRuntimeAlive() && !implicit) {
-        var msg = `program exited (with status: ${status}), but keepRuntimeAlive() is set (counter=${runtimeKeepaliveCounter}) due to an async operation, so halting execution but not exiting the runtime or preventing further async execution (you can use emscripten_force_exit, if you want to force a true shutdown)`;
-        readyPromiseReject?.(msg);
-        err(msg);
-      }
   
       _proc_exit(status);
     };
@@ -4479,35 +4006,6 @@ async function createWasm() {
   }
   }
 
-
-  var handleException = (e) => {
-      // Certain exception types we do not treat as errors since they are used for
-      // internal control flow.
-      // 1. ExitStatus, which is thrown by exit()
-      // 2. "unwind", which is thrown by emscripten_unwind_to_js_event_loop() and others
-      //    that wish to return to JS event loop.
-      if (e instanceof ExitStatus || e == 'unwind') {
-        return EXITSTATUS;
-      }
-      checkStackCookie();
-      if (e instanceof WebAssembly.RuntimeError) {
-        if (_emscripten_stack_get_current() <= 0) {
-          err('Stack overflow detected.  You can try increasing -sSTACK_SIZE (currently set to 5242880)');
-        }
-      }
-      quit_(1, e);
-    };
-
-  
-  
-  var stackAlloc = (sz) => __emscripten_stack_alloc(sz);
-  var stringToUTF8OnStack = (str) => {
-      var size = lengthBytesUTF8(str) + 1;
-      var ret = stackAlloc(size);
-      stringToUTF8(str, ret, size);
-      return ret;
-    };
-
   var wasmTableMirror = [];
   
   
@@ -4517,25 +4015,28 @@ async function createWasm() {
         /** @suppress {checkTypes} */
         wasmTableMirror[funcPtr] = func = wasmTable.get(funcPtr);
       }
-      /** @suppress {checkTypes} */
-      assert(wasmTable.get(funcPtr) == func, 'JavaScript-side Wasm function table mirror is out of date!');
       return func;
     };
-
-
 
 
   var getCFunc = (ident) => {
       var func = Module['_' + ident]; // closure exported function
-      assert(func, 'Cannot call unknown function ' + ident + ', make sure it is exported');
       return func;
     };
   
   var writeArrayToMemory = (array, buffer) => {
-      assert(array.length >= 0, 'writeArrayToMemory array must have a length (should be an array or typed array)')
       HEAP8.set(array, buffer);
     };
   
+  
+  
+  var stackAlloc = (sz) => __emscripten_stack_alloc(sz);
+  var stringToUTF8OnStack = (str) => {
+      var size = lengthBytesUTF8(str) + 1;
+      var ret = stackAlloc(size);
+      stringToUTF8(str, ret, size);
+      return ret;
+    };
   
   
   
@@ -4575,7 +4076,6 @@ async function createWasm() {
       var func = getCFunc(ident);
       var cArgs = [];
       var stack = 0;
-      assert(returnType !== 'array', 'Return type should not be "array".');
       if (args) {
         for (var i = 0; i < args.length; i++) {
           var converter = toC[argTypes[i]];
@@ -4598,14 +4098,27 @@ async function createWasm() {
     };
 
   
+  
     /**
      * @param {string=} returnType
      * @param {Array=} argTypes
      * @param {Object=} opts
      */
   var cwrap = (ident, returnType, argTypes, opts) => {
+      // When the function takes numbers and returns a number, we can just return
+      // the original function
+      var numericArgs = !argTypes || argTypes.every((type) => type === 'number' || type === 'boolean');
+      var numericRet = returnType !== 'string';
+      if (numericRet && numericArgs && !opts) {
+        return getCFunc(ident);
+      }
       return (...args) => ccall(ident, returnType, argTypes, args, opts);
     };
+
+
+  var print = out;
+
+  var printErr = err;
 
   var FS_createPath = (...args) => FS.createPath(...args);
 
@@ -4638,26 +4151,8 @@ if (Module['printErr']) err = Module['printErr'];
 if (Module['wasmBinary']) wasmBinary = Module['wasmBinary'];
   // End ATMODULES hooks
 
-  checkIncomingModuleAPI();
-
   if (Module['arguments']) arguments_ = Module['arguments'];
   if (Module['thisProgram']) thisProgram = Module['thisProgram'];
-
-  // Assertions on removed incoming Module JS APIs.
-  assert(typeof Module['memoryInitializerPrefixURL'] == 'undefined', 'Module.memoryInitializerPrefixURL option was removed, use Module.locateFile instead');
-  assert(typeof Module['pthreadMainPrefixURL'] == 'undefined', 'Module.pthreadMainPrefixURL option was removed, use Module.locateFile instead');
-  assert(typeof Module['cdInitializerPrefixURL'] == 'undefined', 'Module.cdInitializerPrefixURL option was removed, use Module.locateFile instead');
-  assert(typeof Module['filePackagePrefixURL'] == 'undefined', 'Module.filePackagePrefixURL option was removed, use Module.locateFile instead');
-  assert(typeof Module['read'] == 'undefined', 'Module.read option was removed');
-  assert(typeof Module['readAsync'] == 'undefined', 'Module.readAsync option was removed (modify readAsync in JS)');
-  assert(typeof Module['readBinary'] == 'undefined', 'Module.readBinary option was removed (modify readBinary in JS)');
-  assert(typeof Module['setWindowTitle'] == 'undefined', 'Module.setWindowTitle option was removed (modify emscripten_set_window_title in JS)');
-  assert(typeof Module['TOTAL_MEMORY'] == 'undefined', 'Module.TOTAL_MEMORY has been renamed Module.INITIAL_MEMORY');
-  assert(typeof Module['ENVIRONMENT'] == 'undefined', 'Module.ENVIRONMENT has been deprecated. To force the environment, use the ENVIRONMENT compile-time option (for example, -sENVIRONMENT=web or -sENVIRONMENT=node)');
-  assert(typeof Module['STACK_SIZE'] == 'undefined', 'STACK_SIZE can no longer be set at runtime.  Use -sSTACK_SIZE at link time')
-  // If memory is defined in wasm, the user can't provide it, or set INITIAL_MEMORY
-  assert(typeof Module['wasmMemory'] == 'undefined', 'Use of `wasmMemory` detected.  Use -sIMPORTED_MEMORY to define wasmMemory externally');
-  assert(typeof Module['INITIAL_MEMORY'] == 'undefined', 'Detected runtime INITIAL_MEMORY setting.  Use -sIMPORTED_MEMORY to define wasmMemory dynamically');
 
   if (Module['preInit']) {
     if (typeof Module['preInit'] == 'function') Module['preInit'] = [Module['preInit']];
@@ -4665,11 +4160,9 @@ if (Module['wasmBinary']) wasmBinary = Module['wasmBinary'];
       Module['preInit'].shift()();
     }
   }
-  consumedModuleProp('preInit');
 }
 
 // Begin runtime exports
-  Module['callMain'] = callMain;
   Module['addRunDependency'] = addRunDependency;
   Module['removeRunDependency'] = removeRunDependency;
   Module['ccall'] = ccall;
@@ -4681,449 +4174,37 @@ if (Module['wasmBinary']) wasmBinary = Module['wasmBinary'];
   Module['FS'] = FS;
   Module['FS_createDataFile'] = FS_createDataFile;
   Module['FS_createLazyFile'] = FS_createLazyFile;
-  Module['TTY'] = TTY;
-  var missingLibrarySymbols = [
-  'writeI53ToI64',
-  'writeI53ToI64Clamped',
-  'writeI53ToI64Signaling',
-  'writeI53ToU64Clamped',
-  'writeI53ToU64Signaling',
-  'readI53FromI64',
-  'readI53FromU64',
-  'convertI32PairToI53',
-  'convertI32PairToI53Checked',
-  'convertU32PairToI53',
-  'getTempRet0',
-  'setTempRet0',
-  'createNamedFunction',
-  'zeroMemory',
-  'withStackSave',
-  'inetPton4',
-  'inetNtop4',
-  'inetPton6',
-  'inetNtop6',
-  'readSockaddr',
-  'writeSockaddr',
-  'readEmAsmArgs',
-  'jstoi_q',
-  'getExecutableName',
-  'autoResumeAudioContext',
-  'getDynCaller',
-  'dynCall',
-  'runtimeKeepalivePush',
-  'runtimeKeepalivePop',
-  'callUserCallback',
-  'maybeExit',
-  'asmjsMangle',
-  'HandleAllocator',
-  'addOnInit',
-  'addOnPostCtor',
-  'addOnPreMain',
-  'addOnExit',
-  'STACK_SIZE',
-  'STACK_ALIGN',
-  'POINTER_SIZE',
-  'ASSERTIONS',
-  'convertJsFunctionToWasm',
-  'getEmptyTableSlot',
-  'updateTableMap',
-  'getFunctionAddress',
-  'addFunction',
-  'removeFunction',
-  'intArrayToString',
-  'AsciiToString',
-  'stringToAscii',
-  'UTF16ToString',
-  'stringToUTF16',
-  'lengthBytesUTF16',
-  'UTF32ToString',
-  'stringToUTF32',
-  'lengthBytesUTF32',
-  'stringToNewUTF8',
-  'registerKeyEventCallback',
-  'maybeCStringToJsString',
-  'findEventTarget',
-  'getBoundingClientRect',
-  'fillMouseEventData',
-  'registerMouseEventCallback',
-  'registerWheelEventCallback',
-  'registerUiEventCallback',
-  'registerFocusEventCallback',
-  'fillDeviceOrientationEventData',
-  'registerDeviceOrientationEventCallback',
-  'fillDeviceMotionEventData',
-  'registerDeviceMotionEventCallback',
-  'screenOrientation',
-  'fillOrientationChangeEventData',
-  'registerOrientationChangeEventCallback',
-  'fillFullscreenChangeEventData',
-  'registerFullscreenChangeEventCallback',
-  'JSEvents_requestFullscreen',
-  'JSEvents_resizeCanvasForFullscreen',
-  'registerRestoreOldStyle',
-  'hideEverythingExceptGivenElement',
-  'restoreHiddenElements',
-  'setLetterbox',
-  'softFullscreenResizeWebGLRenderTarget',
-  'doRequestFullscreen',
-  'fillPointerlockChangeEventData',
-  'registerPointerlockChangeEventCallback',
-  'registerPointerlockErrorEventCallback',
-  'requestPointerLock',
-  'fillVisibilityChangeEventData',
-  'registerVisibilityChangeEventCallback',
-  'registerTouchEventCallback',
-  'fillGamepadEventData',
-  'registerGamepadEventCallback',
-  'registerBeforeUnloadEventCallback',
-  'fillBatteryEventData',
-  'registerBatteryEventCallback',
-  'setCanvasElementSize',
-  'getCanvasElementSize',
-  'jsStackTrace',
-  'getCallstack',
-  'convertPCtoSourceLocation',
-  'getEnvStrings',
-  'wasiRightsToMuslOFlags',
-  'wasiOFlagsToMuslOFlags',
-  'safeSetTimeout',
-  'setImmediateWrapped',
-  'safeRequestAnimationFrame',
-  'clearImmediateWrapped',
-  'registerPostMainLoop',
-  'registerPreMainLoop',
-  'getPromise',
-  'makePromise',
-  'idsToPromises',
-  'makePromiseCallback',
-  'findMatchingCatch',
-  'Browser_asyncPrepareDataCounter',
-  'arraySum',
-  'addDays',
-  'getSocketFromFD',
-  'getSocketAddress',
-  'FS_mkdirTree',
-  '_setNetworkCallback',
-  'heapObjectForWebGLType',
-  'toTypedArrayIndex',
-  'webgl_enable_ANGLE_instanced_arrays',
-  'webgl_enable_OES_vertex_array_object',
-  'webgl_enable_WEBGL_draw_buffers',
-  'webgl_enable_WEBGL_multi_draw',
-  'webgl_enable_EXT_polygon_offset_clamp',
-  'webgl_enable_EXT_clip_control',
-  'webgl_enable_WEBGL_polygon_mode',
-  'emscriptenWebGLGet',
-  'computeUnpackAlignedImageSize',
-  'colorChannelsInGlTextureFormat',
-  'emscriptenWebGLGetTexPixelData',
-  'emscriptenWebGLGetUniform',
-  'webglGetUniformLocation',
-  'webglPrepareUniformLocationsBeforeFirstUse',
-  'webglGetLeftBracePos',
-  'emscriptenWebGLGetVertexAttrib',
-  '__glGetActiveAttribOrUniform',
-  'writeGLArray',
-  'registerWebGlEventCallback',
-  'runAndAbortIfError',
-  'ALLOC_NORMAL',
-  'ALLOC_STACK',
-  'allocate',
-  'writeStringToMemory',
-  'writeAsciiToMemory',
-  'allocateUTF8',
-  'allocateUTF8OnStack',
-  'demangle',
-  'stackTrace',
-  'getNativeTypeSize',
-];
-missingLibrarySymbols.forEach(missingLibrarySymbol)
-
-  var unexportedSymbols = [
-  'run',
-  'out',
-  'err',
-  'abort',
-  'wasmExports',
-  'HEAPF32',
-  'HEAPF64',
-  'HEAP8',
-  'HEAPU8',
-  'HEAP16',
-  'HEAPU16',
-  'HEAP32',
-  'HEAPU32',
-  'HEAP64',
-  'HEAPU64',
-  'writeStackCookie',
-  'checkStackCookie',
-  'INT53_MAX',
-  'INT53_MIN',
-  'bigintToI53Checked',
-  'stackSave',
-  'stackRestore',
-  'stackAlloc',
-  'ptrToString',
-  'exitJS',
-  'getHeapMax',
-  'growMemory',
-  'ENV',
-  'ERRNO_CODES',
-  'strError',
-  'DNS',
-  'Protocols',
-  'Sockets',
-  'timers',
-  'warnOnce',
-  'readEmAsmArgsArray',
-  'handleException',
-  'keepRuntimeAlive',
-  'asyncLoad',
-  'alignMemory',
-  'mmapAlloc',
-  'wasmTable',
-  'wasmMemory',
-  'getUniqueRunDependency',
-  'noExitRuntime',
-  'addOnPreRun',
-  'addOnPostRun',
-  'freeTableIndexes',
-  'functionsInTableMap',
-  'setValue',
-  'getValue',
-  'PATH',
-  'PATH_FS',
-  'UTF8Decoder',
-  'UTF8ArrayToString',
-  'UTF8ToString',
-  'stringToUTF8Array',
-  'stringToUTF8',
-  'lengthBytesUTF8',
-  'intArrayFromString',
-  'UTF16Decoder',
-  'stringToUTF8OnStack',
-  'writeArrayToMemory',
-  'JSEvents',
-  'specialHTMLTargets',
-  'findCanvasEventTarget',
-  'currentFullscreenStrategy',
-  'restoreOldWindowedStyle',
-  'UNWIND_CACHE',
-  'ExitStatus',
-  'checkWasiClock',
-  'doReadv',
-  'doWritev',
-  'initRandomFill',
-  'randomFill',
-  'emSetImmediate',
-  'emClearImmediate_deps',
-  'emClearImmediate',
-  'promiseMap',
-  'uncaughtExceptionCount',
-  'exceptionLast',
-  'exceptionCaught',
-  'ExceptionInfo',
-  'Browser',
-  'requestFullscreen',
-  'requestFullScreen',
-  'setCanvasSize',
-  'getUserMedia',
-  'createContext',
-  'getPreloadedImageData__data',
-  'wget',
-  'MONTH_DAYS_REGULAR',
-  'MONTH_DAYS_LEAP',
-  'MONTH_DAYS_REGULAR_CUMULATIVE',
-  'MONTH_DAYS_LEAP_CUMULATIVE',
-  'isLeapYear',
-  'ydayFromDate',
-  'SYSCALLS',
-  'preloadPlugins',
-  'FS_createPreloadedFile',
-  'FS_modeStringToFlags',
-  'FS_getMode',
-  'FS_stdin_getChar_buffer',
-  'FS_stdin_getChar',
-  'FS_readFile',
-  'FS_root',
-  'FS_mounts',
-  'FS_devices',
-  'FS_streams',
-  'FS_nextInode',
-  'FS_nameTable',
-  'FS_currentPath',
-  'FS_initialized',
-  'FS_ignorePermissions',
-  'FS_filesystems',
-  'FS_syncFSRequests',
-  'FS_readFiles',
-  'FS_lookupPath',
-  'FS_getPath',
-  'FS_hashName',
-  'FS_hashAddNode',
-  'FS_hashRemoveNode',
-  'FS_lookupNode',
-  'FS_createNode',
-  'FS_destroyNode',
-  'FS_isRoot',
-  'FS_isMountpoint',
-  'FS_isFile',
-  'FS_isDir',
-  'FS_isLink',
-  'FS_isChrdev',
-  'FS_isBlkdev',
-  'FS_isFIFO',
-  'FS_isSocket',
-  'FS_flagsToPermissionString',
-  'FS_nodePermissions',
-  'FS_mayLookup',
-  'FS_mayCreate',
-  'FS_mayDelete',
-  'FS_mayOpen',
-  'FS_checkOpExists',
-  'FS_nextfd',
-  'FS_getStreamChecked',
-  'FS_getStream',
-  'FS_createStream',
-  'FS_closeStream',
-  'FS_dupStream',
-  'FS_doSetAttr',
-  'FS_chrdev_stream_ops',
-  'FS_major',
-  'FS_minor',
-  'FS_makedev',
-  'FS_registerDevice',
-  'FS_getDevice',
-  'FS_getMounts',
-  'FS_syncfs',
-  'FS_mount',
-  'FS_unmount',
-  'FS_lookup',
-  'FS_mknod',
-  'FS_statfs',
-  'FS_statfsStream',
-  'FS_statfsNode',
-  'FS_create',
-  'FS_mkdir',
-  'FS_mkdev',
-  'FS_symlink',
-  'FS_rename',
-  'FS_rmdir',
-  'FS_readdir',
-  'FS_readlink',
-  'FS_stat',
-  'FS_fstat',
-  'FS_lstat',
-  'FS_doChmod',
-  'FS_chmod',
-  'FS_lchmod',
-  'FS_fchmod',
-  'FS_doChown',
-  'FS_chown',
-  'FS_lchown',
-  'FS_fchown',
-  'FS_doTruncate',
-  'FS_truncate',
-  'FS_ftruncate',
-  'FS_utime',
-  'FS_open',
-  'FS_close',
-  'FS_isClosed',
-  'FS_llseek',
-  'FS_read',
-  'FS_write',
-  'FS_mmap',
-  'FS_msync',
-  'FS_ioctl',
-  'FS_writeFile',
-  'FS_cwd',
-  'FS_chdir',
-  'FS_createDefaultDirectories',
-  'FS_createDefaultDevices',
-  'FS_createSpecialDirectories',
-  'FS_createStandardStreams',
-  'FS_staticInit',
-  'FS_init',
-  'FS_quit',
-  'FS_findObject',
-  'FS_analyzePath',
-  'FS_createFile',
-  'FS_forceLoadFile',
-  'FS_absolutePath',
-  'FS_createFolder',
-  'FS_createLink',
-  'FS_joinPath',
-  'FS_mmapAlloc',
-  'FS_standardizePath',
-  'MEMFS',
-  'PIPEFS',
-  'SOCKFS',
-  'tempFixedLengthArray',
-  'miniTempWebGLFloatBuffers',
-  'miniTempWebGLIntBuffers',
-  'GL',
-  'AL',
-  'GLUT',
-  'EGL',
-  'GLEW',
-  'IDBStore',
-  'SDL',
-  'SDL_gfx',
-  'print',
-  'printErr',
-  'jstoi_s',
-];
-unexportedSymbols.forEach(unexportedRuntimeSymbol);
-
+  Module['print'] = print;
+  Module['printErr'] = printErr;
   // End runtime exports
   // Begin JS library exports
   // End JS library exports
 
 // end include: postlibrary.js
 
-function checkIncomingModuleAPI() {
-  ignoredModuleProp('fetchSettings');
-}
+var ASM_CONSTS = {
+  54392: ($0) => { if (typeof Module !== 'undefined' && Module.FS) { try { Module.FS.chdir(UTF8ToString($0)); } catch(e) { console.error('Failed to change directory:', e); } } }
+};
 
 // Imports from the Wasm binary.
-var _fflush = makeInvalidEarlyAccess('_fflush');
-var _strerror = makeInvalidEarlyAccess('_strerror');
-var _main = Module['_main'] = makeInvalidEarlyAccess('_main');
-var _emscripten_stack_get_end = makeInvalidEarlyAccess('_emscripten_stack_get_end');
-var _emscripten_stack_get_base = makeInvalidEarlyAccess('_emscripten_stack_get_base');
-var _setThrew = makeInvalidEarlyAccess('_setThrew');
-var _emscripten_stack_init = makeInvalidEarlyAccess('_emscripten_stack_init');
-var _emscripten_stack_get_free = makeInvalidEarlyAccess('_emscripten_stack_get_free');
-var __emscripten_stack_restore = makeInvalidEarlyAccess('__emscripten_stack_restore');
-var __emscripten_stack_alloc = makeInvalidEarlyAccess('__emscripten_stack_alloc');
-var _emscripten_stack_get_current = makeInvalidEarlyAccess('_emscripten_stack_get_current');
-var memory = makeInvalidEarlyAccess('memory');
-var __indirect_function_table = makeInvalidEarlyAccess('__indirect_function_table');
-var wasmMemory = makeInvalidEarlyAccess('wasmMemory');
-var wasmTable = makeInvalidEarlyAccess('wasmTable');
+var _mdl_interp_init_wasm,
+  _mdl_start_game,
+  _main_wasm,
+  _setThrew,
+  __emscripten_stack_restore,
+  __emscripten_stack_alloc,
+  _emscripten_stack_get_current,
+  memory,
+  __indirect_function_table,
+  wasmMemory,
+  wasmTable;
+
 
 function assignWasmExports(wasmExports) {
-  assert(typeof wasmExports['fflush'] != 'undefined', 'missing Wasm export: fflush');
-  assert(typeof wasmExports['strerror'] != 'undefined', 'missing Wasm export: strerror');
-  assert(typeof wasmExports['__main_argc_argv'] != 'undefined', 'missing Wasm export: __main_argc_argv');
-  assert(typeof wasmExports['emscripten_stack_get_end'] != 'undefined', 'missing Wasm export: emscripten_stack_get_end');
-  assert(typeof wasmExports['emscripten_stack_get_base'] != 'undefined', 'missing Wasm export: emscripten_stack_get_base');
-  assert(typeof wasmExports['setThrew'] != 'undefined', 'missing Wasm export: setThrew');
-  assert(typeof wasmExports['emscripten_stack_init'] != 'undefined', 'missing Wasm export: emscripten_stack_init');
-  assert(typeof wasmExports['emscripten_stack_get_free'] != 'undefined', 'missing Wasm export: emscripten_stack_get_free');
-  assert(typeof wasmExports['_emscripten_stack_restore'] != 'undefined', 'missing Wasm export: _emscripten_stack_restore');
-  assert(typeof wasmExports['_emscripten_stack_alloc'] != 'undefined', 'missing Wasm export: _emscripten_stack_alloc');
-  assert(typeof wasmExports['emscripten_stack_get_current'] != 'undefined', 'missing Wasm export: emscripten_stack_get_current');
-  assert(typeof wasmExports['memory'] != 'undefined', 'missing Wasm export: memory');
-  assert(typeof wasmExports['__indirect_function_table'] != 'undefined', 'missing Wasm export: __indirect_function_table');
-  _fflush = createExportWrapper('fflush', 1);
-  _strerror = createExportWrapper('strerror', 1);
-  _main = Module['_main'] = createExportWrapper('__main_argc_argv', 2);
-  _emscripten_stack_get_end = wasmExports['emscripten_stack_get_end'];
-  _emscripten_stack_get_base = wasmExports['emscripten_stack_get_base'];
-  _setThrew = createExportWrapper('setThrew', 2);
-  _emscripten_stack_init = wasmExports['emscripten_stack_init'];
-  _emscripten_stack_get_free = wasmExports['emscripten_stack_get_free'];
+  _mdl_interp_init_wasm = Module['_mdl_interp_init_wasm'] = wasmExports['mdl_interp_init_wasm'];
+  _mdl_start_game = Module['_mdl_start_game'] = wasmExports['mdl_start_game'];
+  _main_wasm = Module['_main_wasm'] = wasmExports['main_wasm'];
+  _setThrew = wasmExports['setThrew'];
   __emscripten_stack_restore = wasmExports['_emscripten_stack_restore'];
   __emscripten_stack_alloc = wasmExports['_emscripten_stack_alloc'];
   _emscripten_stack_get_current = wasmExports['emscripten_stack_get_current'];
@@ -5165,9 +4246,9 @@ var wasmImports = {
   /** @export */
   clock_time_get: _clock_time_get,
   /** @export */
-  emscripten_date_now: _emscripten_date_now,
+  emscripten_asm_const_int: _emscripten_asm_const_int,
   /** @export */
-  emscripten_err: _emscripten_err,
+  emscripten_date_now: _emscripten_date_now,
   /** @export */
   emscripten_get_now: _emscripten_get_now,
   /** @export */
@@ -5225,10 +4306,10 @@ function invoke_vi(index,a1) {
   }
 }
 
-function invoke_ii(index,a1) {
+function invoke_iii(index,a1,a2) {
   var sp = stackSave();
   try {
-    return getWasmTableEntry(index)(a1);
+    return getWasmTableEntry(index)(a1,a2);
   } catch(e) {
     stackRestore(sp);
     if (e !== e+0) throw e;
@@ -5247,10 +4328,10 @@ function invoke_iiii(index,a1,a2,a3) {
   }
 }
 
-function invoke_iii(index,a1,a2) {
+function invoke_ii(index,a1) {
   var sp = stackSave();
   try {
-    return getWasmTableEntry(index)(a1,a2);
+    return getWasmTableEntry(index)(a1);
   } catch(e) {
     stackRestore(sp);
     if (e !== e+0) throw e;
@@ -5373,54 +4454,12 @@ function invoke_iiiiiiii(index,a1,a2,a3,a4,a5,a6,a7) {
 // include: postamble.js
 // === Auto-generated postamble setup entry stuff ===
 
-var calledRun;
-
-function callMain(args = []) {
-  assert(runDependencies == 0, 'cannot call main when async dependencies remain! (listen on Module["onRuntimeInitialized"])');
-  assert(typeof onPreRuns === 'undefined' || onPreRuns.length == 0, 'cannot call main when preRun functions remain to be called');
-
-  var entryFunction = _main;
-
-  args.unshift(thisProgram);
-
-  var argc = args.length;
-  var argv = stackAlloc((argc + 1) * 4);
-  var argv_ptr = argv;
-  for (var arg of args) {
-    HEAPU32[((argv_ptr)>>2)] = stringToUTF8OnStack(arg);
-    argv_ptr += 4;
-  }
-  HEAPU32[((argv_ptr)>>2)] = 0;
-
-  try {
-
-    var ret = entryFunction(argc, argv);
-
-    // if we're not running an evented main loop, it's time to exit
-    exitJS(ret, /* implicit = */ true);
-    return ret;
-  } catch (e) {
-    return handleException(e);
-  }
-}
-
-function stackCheckInit() {
-  // This is normally called automatically during __wasm_call_ctors but need to
-  // get these values before even running any of the ctors so we call it redundantly
-  // here.
-  _emscripten_stack_init();
-  // TODO(sbc): Move writeStackCookie to native to to avoid this.
-  writeStackCookie();
-}
-
-function run(args = arguments_) {
+function run() {
 
   if (runDependencies > 0) {
     dependenciesFulfilled = run;
     return;
   }
-
-  stackCheckInit();
 
   preRun();
 
@@ -5433,22 +4472,14 @@ function run(args = arguments_) {
   function doRun() {
     // run may have just been called through dependencies being fulfilled just in this very frame,
     // or while the async setStatus time below was happening
-    assert(!calledRun);
-    calledRun = true;
     Module['calledRun'] = true;
 
     if (ABORT) return;
 
     initRuntime();
 
-    preMain();
-
     readyPromiseResolve?.(Module);
     Module['onRuntimeInitialized']?.();
-    consumedModuleProp('onRuntimeInitialized');
-
-    var noInitialRun = Module['noInitialRun'] || true;
-    if (!noInitialRun) callMain(args);
 
     postRun();
   }
@@ -5462,46 +4493,6 @@ function run(args = arguments_) {
   } else
   {
     doRun();
-  }
-  checkStackCookie();
-}
-
-function checkUnflushedContent() {
-  // Compiler settings do not allow exiting the runtime, so flushing
-  // the streams is not possible. but in ASSERTIONS mode we check
-  // if there was something to flush, and if so tell the user they
-  // should request that the runtime be exitable.
-  // Normally we would not even include flush() at all, but in ASSERTIONS
-  // builds we do so just for this check, and here we see if there is any
-  // content to flush, that is, we check if there would have been
-  // something a non-ASSERTIONS build would have not seen.
-  // How we flush the streams depends on whether we are in SYSCALLS_REQUIRE_FILESYSTEM=0
-  // mode (which has its own special function for this; otherwise, all
-  // the code is inside libc)
-  var oldOut = out;
-  var oldErr = err;
-  var has = false;
-  out = err = (x) => {
-    has = true;
-  }
-  try { // it doesn't matter if it fails
-    _fflush(0);
-    // also flush in the JS FS layer
-    for (var name of ['stdout', 'stderr']) {
-      var info = FS.analyzePath('/dev/' + name);
-      if (!info) return;
-      var stream = info.object;
-      var rdev = stream.rdev;
-      var tty = TTY.ttys[rdev];
-      if (tty?.output?.length) {
-        has = true;
-      }
-    }
-  } catch(e) {}
-  out = oldOut;
-  err = oldErr;
-  if (has) {
-    warnOnce('stdio streams had content in them that was not flushed. you should set EXIT_RUNTIME to 1 (see the Emscripten FAQ), or make sure to emit a newline when you printf etc.');
   }
 }
 
@@ -5532,21 +4523,6 @@ if (runtimeInitialized)  {
   });
 }
 
-// Assertion for attempting to access module properties on the incoming
-// moduleArg.  In the past we used this object as the prototype of the module
-// and assigned properties to it, but now we return a distinct object.  This
-// keeps the instance private until it is ready (i.e the promise has been
-// resolved).
-for (const prop of Object.keys(Module)) {
-  if (!(prop in moduleArg)) {
-    Object.defineProperty(moduleArg, prop, {
-      configurable: true,
-      get() {
-        abort(`Access to module property ('${prop}') is no longer possible via the module constructor argument; Instead, use the result of the module constructor.`)
-      }
-    });
-  }
-}
 // end include: postamble_modularize.js
 
 
@@ -5557,10 +4533,10 @@ for (const prop of Object.keys(Module)) {
 
 // Export using a UMD style export, or ES6 exports if selected
 if (typeof exports === 'object' && typeof module === 'object') {
-  module.exports = createMDLI;
+  module.exports = createModule;
   // This default export looks redundant, but it allows TS to import this
   // commonjs style module.
-  module.exports.default = createMDLI;
+  module.exports.default = createModule;
 } else if (typeof define === 'function' && define['amd'])
-  define([], () => createMDLI);
+  define([], () => createModule);
 
