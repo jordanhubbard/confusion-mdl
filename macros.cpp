@@ -18,6 +18,7 @@
 /*****************************************************************************/
 #include <sys/stat.h>
 #include <sys/time.h>
+#include <time.h>
 #include <sys/resource.h>
 #include <stdarg.h>
 #include <stdlib.h>
@@ -3025,7 +3026,7 @@ void mdl_interp_init()
     mdl_set_lval(mdl_value_atom_outchan->v.a, def_outchan, initial_frame);
     mdl_set_gval(mdl_value_atom_outchan->v.a, def_outchan);
     
-    last_assoc_clean = GC_gc_no;
+    last_assoc_clean = GC_get_gc_no();
 }
 
 bool mdl_is_true(mdl_value_t *item)
@@ -3717,9 +3718,11 @@ void mdl_toplevel(FILE *restorefile)
     jumpval = mdl_setjmp(cur_frame->interp_frame);
     if (restorefile && !jumpval)
     {
-        mdl_read_image(restorefile);
-        fprintf(stderr, "Initial restore failed");
-        exit(-1);
+        if (!mdl_read_image(restorefile))
+        {
+            fprintf(stderr, "Initial restore failed\n");
+            exit(-1);
+        }
     }
     // re-acquire the atom in case of restore
     cur_frame->subr = mdl_get_atom("TOPLEVEL!-", true, NULL);
@@ -8093,7 +8096,20 @@ mdl_value_t *mdl_builtin_eval_sleep(mdl_value_t *form, mdl_value_t *args)
 mdl_value_t *mdl_builtin_eval_warranty(mdl_value_t *form, mdl_value_t *args)
 /* SUBR */
 {
+    // Define no_warranty if not already defined (for WASM builds that don't use mdli.cpp)
+    #ifndef __EMSCRIPTEN__
     extern const char no_warranty[];
+    #else
+    // For WASM builds, define it here if not defined elsewhere
+    static const char no_warranty[] = "THERE IS NO WARRANTY FOR THIS PROGRAM, TO THE EXTENT PERMITTED BY\n"
+    "APPLICABLE LAW.  EXCEPT WHEN OTHERWISE STATED IN WRITING THE COPYRIGHT\n"
+    "HOLDERS AND/OR OTHER PARTIES PROVIDE THE PROGRAM \"AS IS\" WITHOUT WARRANTY\n"
+    "OF ANY KIND, EITHER EXPRESSED OR IMPLIED, INCLUDING, BUT NOT LIMITED TO,\n"
+    "THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR\n"
+    "PURPOSE.  THE ENTIRE RISK AS TO THE QUALITY AND PERFORMANCE OF THE PROGRAM\n"
+    "IS WITH YOU.  SHOULD THE PROGRAM PROVE DEFECTIVE, YOU ASSUME THE COST OF\n"
+    "ALL NECESSARY SERVICING, REPAIR OR CORRECTION.\n";
+    #endif
     mdl_value_t *chan = NULL;
     ARGSETUP(args);
     NOMOREARGS(args);

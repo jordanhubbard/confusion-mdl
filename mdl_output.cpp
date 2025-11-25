@@ -439,12 +439,12 @@ const char *mdl_quote_atomname(const char *name, bool *nonnump)
     else if (*s == '-') 
     {
         newlen++;
-        *s++;
+        s++;
     }
     else if (*s == '*') 
     {
         newlen++;
-        *s++;
+        s++;
         octal = true;
     }
     while ((ch = *s++))
@@ -687,7 +687,7 @@ void mdl_print_nonstructured_to_chan(mdl_value_t *chan, const mdl_value_t *a, in
             case MDL_TYPE_FLOAT:
             {
                 char buf[10];
-                sprintf(buf, "%.7f", a->v.fl);
+                snprintf(buf, sizeof(buf), "%.7f", a->v.fl);
                 mdl_print_string_to_chan(chan,buf, strlen(buf), 0, true, prespace);
             }
             break;
@@ -696,9 +696,9 @@ void mdl_print_nonstructured_to_chan(mdl_value_t *chan, const mdl_value_t *a, in
                 char buf[(((sizeof(MDL_INT) << 3) + 2) / 3) + 3]; // size of octal representation plus stars
                 mdl_print_hashtype(chan, a->type, princ, prespace, oblists);
 #ifdef MDL32
-                sprintf(buf, "*%011o*", a->v.w);
+                snprintf(buf, sizeof(buf), "*%011o*", a->v.w);
 #else
-                sprintf(buf, "*%022llo*", a->v.w);
+                snprintf(buf, sizeof(buf), "*%022llo*", a->v.w);
 #endif
                 mdl_print_string_to_chan(chan,buf, strlen(buf), 0, true, true);
                 break;

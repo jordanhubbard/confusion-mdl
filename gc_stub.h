@@ -1,102 +1,76 @@
 /*
- * gc_stub.h - Boehm GC stub for WebAssembly builds
+ * GC Stub Header for WASM Compilation
  * 
- * This file provides replacements for Boehm GC functions when building
- * for WebAssembly with Emscripten. Since WASM has its own memory management
- * and the Boehm GC is not available/practical in WASM, we use simple
- * malloc/free wrappers.
- *
- * NOTE: This is a minimal implementation. We rely on:
- * 1. WASM's memory growth capabilities
- * 2. Short game sessions (memory leaks won't accumulate much)
- * 3. Browser tab closure for ultimate cleanup
- *
- * Future improvements could add a simple mark-and-sweep collector
- * if memory usage becomes problematic.
+ * This file provides a drop-in replacement for Boehm GC when compiling
+ * to WebAssembly. It uses standard malloc/free instead of garbage collection.
+ * 
+ * For native builds, include the real GC headers.
+ * For WASM builds, use standard C library functions.
  */
 
 #ifndef GC_STUB_H
 #define GC_STUB_H
 
-#include <stdlib.h>
-#include <string.h>
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-/* Basic memory allocation - just wrap malloc/free */
-#define GC_MALLOC(n) malloc(n)
-#define GC_MALLOC_ATOMIC(n) malloc(n)
-#define GC_MALLOC_IGNORE_OFF_PAGE(n) malloc(n)
-#define GC_REALLOC(p, n) realloc(p, n)
-#define GC_FREE(p) free(p)
-
-/* Initialization - no-op */
-#define GC_INIT() ((void)0)
-
-/* Manual collection - no-op (could implement simple collector later) */
-static inline void GC_gcollect(void) {
-    /* No-op for now. WASM memory model handles this. */
-}
-
-/* GC cycle number - used for tracking when to clean weak references
- * We'll just increment a counter on each "collection" attempt */
-typedef unsigned long GC_word;
-extern GC_word GC_gc_no;
-
-/* Weak reference support - simplified 
- * Disappearing links allow objects to be collected even if referenced
- * We'll stub these out since WASM doesn't have the same GC semantics */
-static inline int GC_GENERAL_REGISTER_DISAPPEARING_LINK(void **link, void *obj) {
-    /* In a real implementation, this would register 'link' to be 
-     * cleared when 'obj' is collected. For now, do nothing. */
-    (void)link;
-    (void)obj;
-    return 0;
-}
-
-static inline int GC_unregister_disappearing_link(void **link) {
-    /* Unregister a disappearing link */
-    (void)link;
-    return 0;
-}
-
-/* Debug support */
-#ifdef GC_DEBUG
-#define GC_DEBUG_ENABLED 1
+#ifdef __EMSCRIPTEN__
+    // WASM Build: Use standard malloc/free
+    // Memory leaks are acceptable for browser game sessions
+    
+    #include <stdlib.h>
+    #include <string.h>
+    
+    // Replace GC functions with standard equivalents
+    #define GC_MALLOC malloc
+    #define GC_REALLOC realloc
+    #define GC_FREE free
+    #define GC_MALLOC_ATOMIC malloc
+    #define GC_MALLOC_IGNORE_OFF_PAGE malloc
+    
+    // GC initialization (no-op for WASM)
+    #define GC_INIT() 
+    
+    // GC collection (no-op for WASM)
+    #define GC_gcollect()
+    
+    // GC disappearing links (no-op for WASM - not needed without GC)
+    #define GC_GENERAL_REGISTER_DISAPPEARING_LINK(link, obj) ((void)0)
+    #define GC_unregister_disappearing_link(link) ((void)0) 
+    
+    // GC types (stubs)
+    typedef int GC_word;
+    
+    // GC generation counter (stub function)
+    inline GC_word GC_get_gc_no(void) { return 0; }
+    
+    // GC allocator for STL containers (use standard allocator)
+    // Note: This is defined in macros.hpp via gc_allocator.h for native builds
+    // For WASM, we'll use standard allocator
+    #ifdef __cplusplus
+        #include <memory>
+        template<typename T>
+        using traceable_allocator = std::allocator<T>;
+        
+        // Alias gc_allocator to std::allocator for WASM builds
+        // (gc_allocator is what the code expects from gc/gc_allocator.h)
+        template<typename T>
+        using gc_allocator = std::allocator<T>;
+        
+        // UseGC placement new - for WASM, use std::nothrow as a placement tag
+        // This allows new (UseGC) to compile and use regular allocation
+        #include <new>
+        #define UseGC std::nothrow
+    #endif
+    
 #else
-#define GC_DEBUG_ENABLED 0
+    // Native Build: Use Boehm GC
+    #include <gc/gc.h>
+    
+    // Only include C++ headers when compiling C++ code
+    #ifdef __cplusplus
+        #include <gc/gc_allocator.h>
+        #include <gc/gc_cpp.h>
+        // UseGC placement new for GC-aware allocation
+        #define UseGC GC
+    #endif
 #endif
 
-#ifdef __cplusplus
-}
-
-/* C++ STL allocator support - just use standard allocator */
-#include <memory>
-#include <new>
-
-template<typename T>
-using gc_allocator = std::allocator<T>;
-
-template<typename T>
-using traceable_allocator = std::allocator<T>;
-
-/* Boehm GC placement new support
- * The real GC uses special operators, we just redirect to standard new */
-class GCPlacement {};
-extern GCPlacement UseGC;
-extern GCPlacement NoGC;
-
-/* Override placement new to ignore the GC hint */
-inline void* operator new(size_t size, GCPlacement) {
-    return ::operator new(size);
-}
-
-inline void* operator new[](size_t size, GCPlacement) {
-    return ::operator new[](size);
-}
-
-#endif
-
-#endif /* GC_STUB_H */
+#endif // GC_STUB_H

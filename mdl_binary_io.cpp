@@ -23,15 +23,12 @@
 #include "mdl_assoc.hpp"
 #include <vector>
 #include <map>
-#include <ext/hash_set>
+#include <unordered_set>
 #include <string.h>
 #include <stdio.h>
 
-// WASM input handling - must be included after stdio.h
-#include "wasm_input.h"
-
-using __gnu_cxx::hash_set;
-using __gnu_cxx::hash;
+using std::unordered_set;
+using std::hash;
 using std::vector;
 using std::map;
 using std::pair;
@@ -79,7 +76,7 @@ public:
     }
 };
 
-typedef hash_set<struct obj_in_image_t, hash_obj_in_image> obj_image_hash_t;
+typedef unordered_set<struct obj_in_image_t, hash_obj_in_image> obj_image_hash_t;
 typedef vector<struct obj_in_image_t, traceable_allocator<struct obj_in_image_t> > obj_image_list_t;
 typedef map<intptr_t, struct mdl_value_t *> chan_map_t;
 

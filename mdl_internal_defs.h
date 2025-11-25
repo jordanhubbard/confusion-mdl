@@ -19,6 +19,15 @@
 // This forward declaration is necessary
 struct atom_t;
 
+#ifdef __cplusplus
+// Include headers needed for C++ types
+#include <string>
+#include <map>
+#include <vector>
+// Include gc_stub.h to get gc_allocator definition
+#include "gc_stub.h"
+#endif
+
 // INTERNAL PROTOTYPES, definitions, etc
 typedef struct mdl_symbol_t
 {
