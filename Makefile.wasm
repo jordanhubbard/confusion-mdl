@@ -16,7 +16,7 @@ EMCC_FLAGS = \
 	-s EXPORTED_RUNTIME_METHODS='["ccall","cwrap","FS"]' \
 	-s ALLOW_MEMORY_GROWTH=1 \
 	-s MODULARIZE=1 \
-	-s EXPORT_NAME="createModule" \
+	-s EXPORT_NAME="createMDLI" \
 	-s INITIAL_MEMORY=16MB \
 	-s MAXIMUM_MEMORY=256MB \
 	-O2 \
