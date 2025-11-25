@@ -19,7 +19,7 @@ CWARNFLAGS = -Wall -Wno-switch -Wno-unused-but-set-variable
 # Emscripten-specific flags
 EMCC_FLAGS = \
 	-s WASM=1 \
-	-s EXPORTED_RUNTIME_METHODS='["ccall","cwrap","FS","print","printErr"]' \
+	-s EXPORTED_RUNTIME_METHODS='["ccall","cwrap","FS"]' \
 	-s ALLOW_MEMORY_GROWTH=1 \
 	-s MODULARIZE=1 \
 	-s EXPORT_NAME="createModule" \
@@ -69,7 +69,7 @@ mdli.js: $(OBJS)
 		echo "Building without preloaded game files (users can load files via UI)"; \
 	fi
 	$(EMXX) $(CXXFLAGS) -o $@ $^ \
-		-s EXPORTED_FUNCTIONS='["_mdl_interp_init_wasm","_mdl_start_game","_main_wasm"]' \
+		-s EXPORTED_FUNCTIONS='["_mdl_interp_init_wasm","_mdl_start_game","_main_wasm","_malloc","_free"]' \
 		$(GAME_PRELOAD)
 
 # Compile C++ files to WASM object files
