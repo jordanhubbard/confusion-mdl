@@ -16,6 +16,9 @@
 
 CDEBUGFLAGS = -g -DGC_DEBUG
 
+# Detect operating system
+UNAME_S := $(shell uname -s)
+
 # Try pkg-config first, then fall back to common package manager paths
 # This uses shell commands to detect the best path configuration
 GC_CFLAGS := $(shell pkg-config --cflags bdw-gc 2>/dev/null || pkg-config --cflags gc 2>/dev/null || \
@@ -29,6 +32,17 @@ GC_LIBS := $(shell \
   (test -d /opt/homebrew/include/gc && echo "-L/opt/homebrew/lib -lgc -lgccpp") || \
   (test -d /usr/local/include/gc && echo "-L/usr/local/lib -lgc -lgccpp") || \
   echo "-lgc -lgccpp")
+
+# Check if GC library is available on Linux
+ifeq ($(UNAME_S),Linux)
+  GC_CHECK := $(shell pkg-config --exists bdw-gc 2>/dev/null && echo "found" || \
+    pkg-config --exists gc 2>/dev/null && echo "found" || \
+    test -f /usr/include/gc/gc.h && echo "found" || \
+    echo "")
+  ifeq ($(GC_CHECK),)
+    $(error Boehm GC library not found. Please install it with: sudo apt-get install libgc-dev)
+  endif
+endif
 
 COPTFLAGS = -O2 $(GC_CFLAGS)
 CWARNFLAGS =  -Wall -Wno-switch -Wno-unused-but-set-variable
