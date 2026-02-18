@@ -18,6 +18,7 @@
 /*****************************************************************************/
 #include <sys/stat.h>
 #include <sys/time.h>
+#include <time.h>
 #include <sys/resource.h>
 #include <stdarg.h>
 #include <stdlib.h>
@@ -28,6 +29,9 @@
 #include <getopt.h>
 #include <stdint.h>
 #include <stdio.h>
+#ifdef __EMSCRIPTEN__
+#include <emscripten.h>
+#endif
 #include "macros.hpp"
 #include "mdl_internal_defs.h"
 #include "mdl_builtin_types.h"
@@ -1550,7 +1554,13 @@ void mdl_error(const char *err)
         mdl_longjmp(initial_frame->interp_frame, LONGJMP_ERROR);
     }
     fprintf(stderr, "Fatal: Lost my stack\n");
+#ifdef __EMSCRIPTEN__
+    EM_ASM({
+        throw new Error('MDL Fatal: ' + UTF8ToString($0));
+    }, err);
+#else
     exit(-1);
+#endif
 }
 
 mdl_value_t *mdl_call_error_ext(const char *erratom, const char *errstr, ...)
@@ -2952,7 +2962,11 @@ void mdl_interp_init()
         // could fix it by making FLOAT its own primtype, but
         // that might break MDL
         printf("sizeof(MDL_FLOAT) %zd != sizeof(MDL_INT) %zd\n", sizeof(MDL_FLOAT), sizeof(MDL_INT));
+#ifdef __EMSCRIPTEN__
+        EM_ASM({ throw new Error('MDL Fatal: sizeof(MDL_FLOAT) != sizeof(MDL_INT)'); });
+#else
         exit(-1);
+#endif
     }
 
     srand48(1);
@@ -3025,7 +3039,7 @@ void mdl_interp_init()
     mdl_set_lval(mdl_value_atom_outchan->v.a, def_outchan, initial_frame);
     mdl_set_gval(mdl_value_atom_outchan->v.a, def_outchan);
     
-    last_assoc_clean = GC_gc_no;
+    last_assoc_clean = GC_get_gc_no();
 }
 
 bool mdl_is_true(mdl_value_t *item)
@@ -3717,9 +3731,16 @@ void mdl_toplevel(FILE *restorefile)
     jumpval = mdl_setjmp(cur_frame->interp_frame);
     if (restorefile && !jumpval)
     {
-        mdl_read_image(restorefile);
-        fprintf(stderr, "Initial restore failed");
-        exit(-1);
+        if (!mdl_read_image(restorefile))
+        {
+            fprintf(stderr, "Initial restore failed\n");
+#ifdef __EMSCRIPTEN__
+            EM_ASM({ throw new Error('MDL: Initial restore failed'); });
+            return;
+#else
+            exit(-1);
+#endif
+        }
     }
     // re-acquire the atom in case of restore
     cur_frame->subr = mdl_get_atom("TOPLEVEL!-", true, NULL);
@@ -8093,7 +8114,20 @@ mdl_value_t *mdl_builtin_eval_sleep(mdl_value_t *form, mdl_value_t *args)
 mdl_value_t *mdl_builtin_eval_warranty(mdl_value_t *form, mdl_value_t *args)
 /* SUBR */
 {
+    // Define no_warranty if not already defined (for WASM builds that don't use mdli.cpp)
+    #ifndef __EMSCRIPTEN__
     extern const char no_warranty[];
+    #else
+    // For WASM builds, define it here if not defined elsewhere
+    static const char no_warranty[] = "THERE IS NO WARRANTY FOR THIS PROGRAM, TO THE EXTENT PERMITTED BY\n"
+    "APPLICABLE LAW.  EXCEPT WHEN OTHERWISE STATED IN WRITING THE COPYRIGHT\n"
+    "HOLDERS AND/OR OTHER PARTIES PROVIDE THE PROGRAM \"AS IS\" WITHOUT WARRANTY\n"
+    "OF ANY KIND, EITHER EXPRESSED OR IMPLIED, INCLUDING, BUT NOT LIMITED TO,\n"
+    "THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR\n"
+    "PURPOSE.  THE ENTIRE RISK AS TO THE QUALITY AND PERFORMANCE OF THE PROGRAM\n"
+    "IS WITH YOU.  SHOULD THE PROGRAM PROVE DEFECTIVE, YOU ASSUME THE COST OF\n"
+    "ALL NECESSARY SERVICING, REPAIR OR CORRECTION.\n";
+    #endif
     mdl_value_t *chan = NULL;
     ARGSETUP(args);
     NOMOREARGS(args);

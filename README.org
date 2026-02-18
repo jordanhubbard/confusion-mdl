@@ -1,5 +1,3 @@
-* **NOTE: migrated now to [[https://github.com/emacsomancer/confusion-mdl][https://github.com/emacsomancer/confusion-mdl]] for further development.*
-
 * Confusion: A MDL interpreter 
 ** (or, "How to Fit a Small Program into a Large Machine")
 *** created by Matthew Russotto - (original at <http://www.russotto.net/git/mrussotto/confusion/> )
