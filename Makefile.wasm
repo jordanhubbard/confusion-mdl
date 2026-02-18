@@ -1,6 +1,9 @@
 # WASM Makefile for Confusion MDL Interpreter
 # Builds the interpreter as WebAssembly for browser execution
 
+# Build output directory (override from parent Makefile for out-of-tree builds)
+BUILD_DIR ?= .
+
 # Emscripten compiler
 EMCC = emcc
 EMXX = em++
@@ -29,7 +32,7 @@ CXXFLAGS = $(CDEBUGFLAGS) $(COPTFLAGS) $(CWARNFLAGS) $(EMCC_FLAGS)
 
 PERL = perl
 
-PROGRAMS = mdli.js mdli.wasm
+PROGRAMS = $(BUILD_DIR)/mdli.js $(BUILD_DIR)/mdli.wasm
 
 TMPSRCS = mdl_builtins.cpp mdl_builtin_types.cpp mdl_builtin_types.h mdl_builtins.h copying.c
 
@@ -38,21 +41,21 @@ CXXSRCS = macros.cpp mdli_wasm.cpp mdl_builtins.cpp mdl_builtin_types.cpp mdl_re
 
 CSRCS = mdl_strbuf.c copying.c
 
-OBJS = $(CXXSRCS:.cpp=.wasm.o) $(CSRCS:.c=.wasm.o)
+OBJS = $(addprefix $(BUILD_DIR)/,$(CXXSRCS:.cpp=.wasm.o) $(CSRCS:.c=.wasm.o))
 
 # Game files to preload (optional - can be set via environment variable)
 # If GAME_DIRS is not set, build will work without game files (users can load via UI)
 # GAME_DIRS should be a space-separated list of directories to preload
-GAME_DIRS ?= 
+GAME_DIRS ?=
 # Build preload flags for each game directory
 GAME_PRELOAD := $(foreach dir,$(GAME_DIRS),$(if $(wildcard $(dir)),--preload-file $(dir)@/game/$(notdir $(dir)),))
 
 # Check if Emscripten is available (only when building, not cleaning)
 check-emscripten:
-	@command -v emcc >/dev/null 2>&1 || (echo "❌ Emscripten not found. Please install: https://emscripten.org/docs/getting_started/downloads.html" && exit 1)
+	@command -v emcc >/dev/null 2>&1 || (echo "Emscripten not found. Please install: https://emscripten.org/docs/getting_started/downloads.html" && exit 1)
 
 # WASM build target
-mdli.js: check-emscripten $(OBJS)
+$(BUILD_DIR)/mdli.js: check-emscripten $(OBJS)
 	@echo "Linking WASM module..."
 	@if [ -n "$(GAME_DIRS)" ]; then \
 		echo "Preloading game files from: $(GAME_DIRS)"; \
@@ -60,7 +63,7 @@ mdli.js: check-emscripten $(OBJS)
 			if [ -d "$$dir" ]; then \
 				echo "  - $$dir -> /game/$$(basename $$dir)"; \
 			else \
-				echo "  ⚠️  Warning: $$dir not found"; \
+				echo "  Warning: $$dir not found"; \
 			fi; \
 		done; \
 	else \
@@ -71,12 +74,14 @@ mdli.js: check-emscripten $(OBJS)
 		$(GAME_PRELOAD)
 
 # Compile C++ files to WASM object files
-%.wasm.o: %.cpp
+$(BUILD_DIR)/%.wasm.o: %.cpp
+	@mkdir -p $(BUILD_DIR)
 	@echo "Compiling $<..."
 	$(EMXX) $(CXXFLAGS) -c -o $@ $<
 
-# Compile C files to WASM object files  
-%.wasm.o: %.c
+# Compile C files to WASM object files
+$(BUILD_DIR)/%.wasm.o: %.c
+	@mkdir -p $(BUILD_DIR)
 	@echo "Compiling $<..."
 	$(EMCC) $(CFLAGS) -c -o $@ $<
 
@@ -96,12 +101,12 @@ mdl_builtin_types.cpp: macros.hpp mdl_builtins.h
 	$(PERL) make_types.pl $(@:.cpp=.h) < $< > $@
 
 # Dependencies
-macros.wasm.o: mdl_builtin_types.h mdl_builtins.h mdl_internal_defs.h
-mdl_output.wasm.o: mdl_builtin_types.h mdl_builtins.h mdl_internal_defs.h
-mdl_read.wasm.o: mdl_builtin_types.h mdl_builtins.h mdl_internal_defs.h
-mdl_binary_io.wasm.o: mdl_builtin_types.h mdl_builtins.h mdl_internal_defs.h
+$(BUILD_DIR)/macros.wasm.o: mdl_builtin_types.h mdl_builtins.h mdl_internal_defs.h
+$(BUILD_DIR)/mdl_output.wasm.o: mdl_builtin_types.h mdl_builtins.h mdl_internal_defs.h
+$(BUILD_DIR)/mdl_read.wasm.o: mdl_builtin_types.h mdl_builtins.h mdl_internal_defs.h
+$(BUILD_DIR)/mdl_binary_io.wasm.o: mdl_builtin_types.h mdl_builtins.h mdl_internal_defs.h
 
 clean-wasm:
-	rm -f *.wasm.o mdli.wasm mdli.js mdli.data
+	rm -f $(BUILD_DIR)/*.wasm.o $(BUILD_DIR)/mdli.wasm $(BUILD_DIR)/mdli.js $(BUILD_DIR)/mdli.data
 
-.PHONY: clean-wasm
+.PHONY: clean-wasm check-emscripten
