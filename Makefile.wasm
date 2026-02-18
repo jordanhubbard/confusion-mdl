@@ -4,6 +4,8 @@
 # Build output directory (override from parent Makefile for out-of-tree builds)
 BUILD_DIR ?= .
 
+.DEFAULT_GOAL := $(BUILD_DIR)/mdli.js
+
 # Emscripten compiler
 EMCC = emcc
 EMXX = em++
