@@ -67,7 +67,7 @@ mdli.js: check-emscripten $(OBJS)
 		echo "Building without preloaded game files (users can load files via UI)"; \
 	fi
 	$(EMXX) $(CXXFLAGS) -o $@ $(OBJS) \
-		-s EXPORTED_FUNCTIONS='["_mdl_interp_init_wasm","_mdl_start_game","_main_wasm","_malloc","_free"]' \
+		-s EXPORTED_FUNCTIONS='["_mdl_interp_init_wasm","_mdl_start_game","_mdl_get_last_error","_mdl_clear_error","_main_wasm","_malloc","_free"]' \
 		$(GAME_PRELOAD)
 
 # Compile C++ files to WASM object files

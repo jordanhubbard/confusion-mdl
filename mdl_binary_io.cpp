@@ -104,13 +104,15 @@ static obj_in_image_t *find_obj_by_num(int objnum, objtype_t objtype)
     if (objnum < 0)
     {
         if (!OBJTYPE_IS_VALUE(objtype)) return NULL;
+        if (-objnum-1 >= (int)built_in_table.size()) return NULL;
         builtin_obj.objtype = OBJTYPE_MDL_VALUE;
         builtin_obj.ptr = built_in_table[-objnum-1].v;
         builtin_obj.objnum = objnum;
         return &builtin_obj;
     }
+    if (objnum-1 >= (int)image_object_list.size()) return NULL;
     if ((image_object_list[objnum-1].objtype == objtype) ||
-        (OBJTYPE_IS_VALUE(image_object_list[objnum-1].objtype) && 
+        (OBJTYPE_IS_VALUE(image_object_list[objnum-1].objtype) &&
          OBJTYPE_IS_VALUE(objtype)))
     {
         return &image_object_list[objnum - 1];
@@ -171,12 +173,15 @@ int mdl_read_encint(FILE *f, intmax_t *val, bool is_signed)
 {
     uintmax_t uval = 0;
     int ch;
+    int byte_count = 0;
+    const int max_bytes = (sizeof(uintmax_t) * 8 + 6) / 7;
     do
     {
         uval <<= 7;
         ch = fgetc(f);
         if (ch < 0) return ch;
         uval |= ch & 0x7F;
+        if (++byte_count > max_bytes) return -1;
     }
     while (ch & 0x80);
     if (is_signed)
@@ -619,15 +624,21 @@ int mdl_read_rawstring(FILE *f, char **rawp, int *lenp)
     int len;
     bool immut = false;
     char pct;
+    const int MAX_STRING_SIZE = 16 * 1024 * 1024; // 16MB
 
     if (mdl_read_int(f, &len) != 0) return -1;
     pct = fgetc(f);
     if (pct != '%') return -1;
     *lenp = len;
-    if (len < 0) 
+    if (len < 0)
     {
         len = ~len;
         immut = true;
+    }
+    if (len > MAX_STRING_SIZE)
+    {
+        fprintf(stderr, "String too large: %d bytes\n", len);
+        return -1;
     }
     *rawp = mdl_new_raw_string(len, immut);
     if (fread(*rawp, len, 1, f) != 1) return -1;
@@ -759,12 +770,17 @@ int mdl_read_vector_block(FILE *f, mdl_vector_block_t **blkp)
     int i;
     mdl_value_t *elems;
     mdl_vector_block_t *blk;
+    const int MAX_VECTOR_SIZE = 1000000;
 
     // objtype has already been read
     *blkp = blk = (mdl_vector_block_t *)GC_MALLOC(sizeof(mdl_vector_block_t));
     if (mdl_read_int(f, &blk->size) != 0) return -1;
     if (mdl_read_int(f, &blk->startoffset) != 0) return -1;
-    // write elements directly in the block
+    if (blk->size < 0 || blk->size > MAX_VECTOR_SIZE)
+    {
+        fprintf(stderr, "Vector block size out of range: %d\n", blk->size);
+        return -1;
+    }
     blk->elements = (mdl_value_t *)GC_MALLOC(sizeof(mdl_value_t) * blk->size);
     elems = blk->elements;
     for (i = 0; i < blk->size; i++)
@@ -930,13 +946,18 @@ int mdl_read_uvector_block(FILE *f, mdl_uvector_block_t **blkp, mdl_type_table_t
     uvector_element_t *elems;
     primtype_t pt;
     mdl_uvector_block_t *blk;
+    const int MAX_UVECTOR_SIZE = 1000000;
 
     //objtype has already been read
     *blkp = blk = (mdl_uvector_block_t *)GC_MALLOC(sizeof(mdl_uvector_block_t));
     if (mdl_read_int(f, &blk->type) != 0) return -1;
     if (mdl_read_int(f, &blk->size) != 0) return -1;
     if (mdl_read_int(f, &blk->startoffset) != 0) return -1;
-    // read elements directly into the block
+    if (blk->size < 0 || blk->size > MAX_UVECTOR_SIZE)
+    {
+        fprintf(stderr, "Uvector block size out of range: %d\n", blk->size);
+        return -1;
+    }
     blk->elements = (uvector_element_t *)GC_MALLOC(sizeof(uvector_element_t) * blk->size);
     elems = blk->elements;
     pt = (*tt)[blk->type].pt;
@@ -1054,7 +1075,11 @@ int mdl_read_type_table(FILE *f, mdl_type_table_t *tt)
     {
         return -1;
     }
-    if (size < 0) return -1;
+    if (size < 0 || size > 100000)
+    {
+        fprintf(stderr, "Type table size out of range: %d\n", size);
+        return -1;
+    }
     tt->reserve(size);
     for (i = 0; i < size; i++)
     {
@@ -1122,7 +1147,12 @@ int mdl_read_asoc_table(FILE *f, mdl_tmp_assoc_table_t *tmptable)
         fprintf(stderr, "Didn't find association table\n");
         return -1;
     }
-    mdl_read_int(f, &size);
+    if (mdl_read_int(f, &size) != 0) return -1;
+    if (size < 0 || size > 1000000)
+    {
+        fprintf(stderr, "Association table size out of range: %d\n", size);
+        return -1;
+    }
 
     tmptable->reserve(size);
     for (i = 0; i < size; i++)
@@ -1330,6 +1360,45 @@ void mdl_write_image(FILE *f, mdl_value_t *save_arg)
     image_object_list.clear();
 }
 
+// Pre-flight validation for save files
+static bool mdl_validate_save_file(FILE *f)
+{
+    const long MIN_SAVE_SIZE = 100;
+    const long MAX_SAVE_SIZE = 16L * 1024 * 1024; // 16MB
+
+    long pos = ftell(f);
+    if (fseek(f, 0, SEEK_END) != 0) return false;
+    long file_size = ftell(f);
+    fseek(f, pos, SEEK_SET);
+
+    if (file_size < MIN_SAVE_SIZE)
+    {
+        fprintf(stderr, "Save file too small: %ld bytes (minimum %ld)\n", file_size, MIN_SAVE_SIZE);
+        return false;
+    }
+    if (file_size > MAX_SAVE_SIZE)
+    {
+        fprintf(stderr, "Save file too large: %ld bytes (maximum %ld)\n", file_size, MAX_SAVE_SIZE);
+        return false;
+    }
+
+    // Verify first object type is OBJTYPE_BUILT_IN_TABLE
+    objtype_t first_objtype;
+    if (mdl_read_objtype(f, &first_objtype) != 0)
+    {
+        fprintf(stderr, "Cannot read first object type from save file\n");
+        return false;
+    }
+    fseek(f, pos, SEEK_SET);
+
+    if (first_objtype != OBJTYPE_BUILT_IN_TABLE)
+    {
+        fprintf(stderr, "Invalid save file: expected BUILT_IN_TABLE, got %d\n", (int)first_objtype);
+        return false;
+    }
+    return true;
+}
+
 bool mdl_read_image(FILE *f)
 {
     size_t index;
@@ -1347,7 +1416,13 @@ bool mdl_read_image(FILE *f)
 
     image_object_list.clear();
     chanmap.clear();
-    
+
+    if (!mdl_validate_save_file(f))
+    {
+        fprintf(stderr, "Save file validation failed\n");
+        return false;
+    }
+
     if ((err = mdl_read_built_in_table(f, &new_built_ins)) != 0)
     {
         fprintf(stderr, "Unable to read built_in table %d\n", err);

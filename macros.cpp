@@ -29,6 +29,9 @@
 #include <getopt.h>
 #include <stdint.h>
 #include <stdio.h>
+#ifdef __EMSCRIPTEN__
+#include <emscripten.h>
+#endif
 #include "macros.hpp"
 #include "mdl_internal_defs.h"
 #include "mdl_builtin_types.h"
@@ -1551,7 +1554,13 @@ void mdl_error(const char *err)
         mdl_longjmp(initial_frame->interp_frame, LONGJMP_ERROR);
     }
     fprintf(stderr, "Fatal: Lost my stack\n");
+#ifdef __EMSCRIPTEN__
+    EM_ASM({
+        throw new Error('MDL Fatal: ' + UTF8ToString($0));
+    }, err);
+#else
     exit(-1);
+#endif
 }
 
 mdl_value_t *mdl_call_error_ext(const char *erratom, const char *errstr, ...)
@@ -2953,7 +2962,11 @@ void mdl_interp_init()
         // could fix it by making FLOAT its own primtype, but
         // that might break MDL
         printf("sizeof(MDL_FLOAT) %zd != sizeof(MDL_INT) %zd\n", sizeof(MDL_FLOAT), sizeof(MDL_INT));
+#ifdef __EMSCRIPTEN__
+        EM_ASM({ throw new Error('MDL Fatal: sizeof(MDL_FLOAT) != sizeof(MDL_INT)'); });
+#else
         exit(-1);
+#endif
     }
 
     srand48(1);
@@ -3721,7 +3734,12 @@ void mdl_toplevel(FILE *restorefile)
         if (!mdl_read_image(restorefile))
         {
             fprintf(stderr, "Initial restore failed\n");
+#ifdef __EMSCRIPTEN__
+            EM_ASM({ throw new Error('MDL: Initial restore failed'); });
+            return;
+#else
             exit(-1);
+#endif
         }
     }
     // re-acquire the atom in case of restore
