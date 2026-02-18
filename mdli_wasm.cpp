@@ -64,6 +64,9 @@ int mdl_start_game(const char* game_dir, const char* restore_file) {
 
     mdl_clear_error();
 
+    // Initialize the interpreter (sets up built-in table, types, etc.)
+    mdl_interp_init_wasm();
+
     // Change to game directory in virtual file system
     if (game_dir && game_dir[0] != '\0') {
         EM_ASM({
