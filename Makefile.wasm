@@ -18,12 +18,14 @@ CWARNFLAGS = -Wall -Wno-switch -Wno-unused-but-set-variable
 # Emscripten-specific flags
 EMCC_FLAGS = \
 	-s WASM=1 \
-	-s EXPORTED_RUNTIME_METHODS='["ccall","cwrap","FS"]' \
+	-s EXPORTED_RUNTIME_METHODS='["ccall","cwrap","FS","Asyncify"]' \
 	-s ALLOW_MEMORY_GROWTH=1 \
 	-s MODULARIZE=1 \
 	-s EXPORT_NAME="createMDLI" \
 	-s INITIAL_MEMORY=16MB \
 	-s MAXIMUM_MEMORY=256MB \
+	-s ASYNCIFY \
+	-s ASYNCIFY_STACK_SIZE=131072 \
 	-O2 \
 	-DEMSCRIPTEN \
 	-D__EMSCRIPTEN__

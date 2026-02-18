@@ -50,6 +50,10 @@ void mdl_clear_error() {
 EMSCRIPTEN_KEEPALIVE
 void mdl_interp_init_wasm() {
     GC_INIT();
+    // Disable stdio buffering so output appears immediately in the browser
+    // (without this, prompts like ">" are stuck in the buffer until a newline)
+    setvbuf(stdout, NULL, _IONBF, 0);
+    setvbuf(stderr, NULL, _IONBF, 0);
     mdl_clear_error();
     mdl_interp_init();
 }

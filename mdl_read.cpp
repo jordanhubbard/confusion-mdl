@@ -24,6 +24,9 @@
 #include <ctype.h>
 #include <errno.h>
 #include <unistd.h>
+#ifdef __EMSCRIPTEN__
+#include "wasm_input.h"
+#endif
 
 #define BANGCHAR(ch) (('!' << 8) | (ch))
 #define IS_BANGCHAR(ch) (((ch) >> 8) == '!')

@@ -1,6 +1,6 @@
 /*****************************************************************************/
 /*    WASM Input Helper for Emscripten                                      */
-/*    Provides non-blocking input wrapper for browser environment           */
+/*    Provides async stdin via EM_ASYNC_JS for browser environment          */
 /*****************************************************************************/
 #ifndef WASM_INPUT_H
 #define WASM_INPUT_H
@@ -9,32 +9,40 @@
 #include <emscripten.h>
 #include <stdio.h>
 
-// Wrapper for getc() that yields control back to browser when no input available
-static inline int wasm_getc_with_yield(FILE *f) {
-    int c;
-    
-    // Loop indefinitely waiting for input
-    // User can always close browser tab if they want to stop
-    while (1) {
-        c = getc(f);
-        if (c != EOF) {
-            return c;
-        }
-        
-        // Check if it's a real EOF or just no data available
-        if (feof(f)) {
-            clearerr(f); // Clear EOF flag
-        }
-        
-        // Yield control back to browser for 10ms
-        // ASYNCIFY allows this to work properly
-        emscripten_sleep(10);
+/*
+ * Async JavaScript function that waits for stdin input from the browser.
+ *
+ * This uses Emscripten's EM_ASYNC_JS which creates a proper async import
+ * that Asyncify handles at the WASM boundary.  This is much more reliable
+ * than the FS.init stdin callback approach, which runs inside a JavaScript
+ * loop that Asyncify cannot save/restore (it only saves the WASM stack).
+ *
+ * On the JS side:
+ *   Module.stdinBuffer  - array of pending character codes
+ *   Module.stdinResolve - Promise resolve callback when waiting for input
+ */
+EM_ASYNC_JS(int, wasm_stdin_getchar, (), {
+    if (Module.stdinBuffer && Module.stdinBuffer.length > 0) {
+        return Module.stdinBuffer.shift();
     }
+    return await new Promise(function(resolve) {
+        Module.stdinResolve = resolve;
+    });
+});
+
+/* Use fgetc (guaranteed to be a function, not a macro) for non-stdin files */
+#ifdef getc
+#undef getc
+#endif
+
+static inline int wasm_getc_wrapper(FILE *f) {
+    if (f == stdin) {
+        return wasm_stdin_getchar();
+    }
+    return fgetc(f);
 }
 
-// Replace getc in Emscripten builds
-#define getc(f) wasm_getc_with_yield(f)
+#define getc(f) wasm_getc_wrapper(f)
 
-#endif // __EMSCRIPTEN__
-
-#endif // WASM_INPUT_H
+#endif /* __EMSCRIPTEN__ */
+#endif /* WASM_INPUT_H */
