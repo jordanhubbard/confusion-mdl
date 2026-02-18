@@ -31,6 +31,14 @@
 #include <stdio.h>
 #ifdef __EMSCRIPTEN__
 #include <emscripten.h>
+// Helper to throw JS errors from outside setjmp/longjmp functions.
+// Emscripten 4.0+ forbids EM_ASM in functions that use setjmp/longjmp.
+static __attribute__((noinline)) void emscripten_throw(const char *msg)
+{
+    EM_ASM({
+        throw new Error(UTF8ToString($0));
+    }, msg);
+}
 #endif
 #include "macros.hpp"
 #include "mdl_internal_defs.h"
@@ -1555,9 +1563,7 @@ void mdl_error(const char *err)
     }
     fprintf(stderr, "Fatal: Lost my stack\n");
 #ifdef __EMSCRIPTEN__
-    EM_ASM({
-        throw new Error('MDL Fatal: ' + UTF8ToString($0));
-    }, err);
+    emscripten_throw(err);
 #else
     exit(-1);
 #endif
@@ -2963,7 +2969,7 @@ void mdl_interp_init()
         // that might break MDL
         printf("sizeof(MDL_FLOAT) %zd != sizeof(MDL_INT) %zd\n", sizeof(MDL_FLOAT), sizeof(MDL_INT));
 #ifdef __EMSCRIPTEN__
-        EM_ASM({ throw new Error('MDL Fatal: sizeof(MDL_FLOAT) != sizeof(MDL_INT)'); });
+        emscripten_throw("MDL Fatal: sizeof(MDL_FLOAT) != sizeof(MDL_INT)");
 #else
         exit(-1);
 #endif
@@ -3735,7 +3741,7 @@ void mdl_toplevel(FILE *restorefile)
         {
             fprintf(stderr, "Initial restore failed\n");
 #ifdef __EMSCRIPTEN__
-            EM_ASM({ throw new Error('MDL: Initial restore failed'); });
+            emscripten_throw("MDL: Initial restore failed");
             return;
 #else
             exit(-1);
